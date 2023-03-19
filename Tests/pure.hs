@@ -1,3 +1,4 @@
+-- A function with only pure functions (i.e. only `let`s in main)
 add :: Int -> Int -> Int -> Int
 add x y z = x + y + z
 

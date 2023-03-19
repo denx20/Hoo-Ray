@@ -16,7 +16,7 @@ Then, `cabal build` to build all the executables to make sure there are no criti
 Finally, `cabal run [program] -- [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the depeendency graph, one would do
 
 ```
-cabal run dependency-graph -- Tests/test.hs
+cabal run dependency-graph -- Tests/pure.hs
 ```
 
 # Developing
