@@ -3,21 +3,26 @@ Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Hask
 
 # Installation / Executing
 
-Install the Haskell toolchain, preferably via [GHCup](https://www.haskell.org/ghcup/). Then in this directory, run
+- Install the Haskell toolchain, preferably via [GHCup](https://www.haskell.org/ghcup/).
 
-```
-cabal install --only-dependencies
-```
+- Run `cabal configure`. Optionally, If you want to build the tools for distributed computing, additionally pass in the argument `-f distributed` to this command (i.e. run `cabal configure -f distributed`).
 
-to install the dependencies.
+- In this directory, run
 
-Then, `cabal build` to build all the executables to make sure there are no critical errors.
+    ```
+    cabal install --only-dependencies
+    ```
 
-Finally, `cabal run [program] -- [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the depeendency graph, one would do
+    to install the dependencies.
 
-```
-cabal run dependency-graph -- Tests/pure.hs
-```
+
+- Then, `cabal build` to build all the executables to make sure there are no critical errors.
+
+- Finally, `cabal run [program] -- [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the depeendency graph, one would do
+
+    ```
+    cabal run dependency-graph -- Tests/pure.hs
+    ```
 
 # Developing
 
