@@ -13,7 +13,7 @@ Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Hask
     cabal install --only-dependencies
     ```
 
-    to install the dependencies.
+    to install the dependencies [^1].
 
 
 - Then, `cabal build` to build all the executables to make sure there are no critical errors.
@@ -27,3 +27,5 @@ Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Hask
 # Developing
 
 Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
+
+[^1]: If you get an error about Cabal cannot resolve dependencies while installing with `-f distributed`, downgrade your GHC to 8.4.4 with `ghcup tui` and try again.
