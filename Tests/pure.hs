@@ -11,14 +11,12 @@ multiply x y = x * y
 divide :: Int -> Int -> Int
 divide x y = x `div` y
 
-operate :: (Int -> Int -> Int) -> Int -> Int -> Int
-operate f x y = f x y
-
 main :: IO ()
 main = do
     let x = 10
     let y = 5
-    let z = 2
-    let w = add (add x y z) y z
-    let a = w `sub` z
+    let z = 3
+    let w = add x y z
+    let k = multiply x z
+    let a = k `sub` y
     print a
