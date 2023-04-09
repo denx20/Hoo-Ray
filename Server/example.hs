@@ -4,14 +4,8 @@
 -- cabal run distributed-example slave localhost 8082 &
 -- cabal run distributed-example slave localhost 8083 &
 -- cabal run distributed-example master localhost 8084
--- But currently does not work on Duke's network. Joe has solved a UDP problem (which seems to be just a DNS problem), but still failing.
--- Joe mentioned something about UDP multicasting working or not working wrt wireless vs cabled cxn. idk still
--- Expected result:
--- Slaves: [nid://localhost:8083:0,nid://localhost:8082:0,nid://localhost:8081:0,nid://localhost:8080:0]
--- Actual result:
--- Slaves: []
 --
---
+-- Figured this out with Joe
 
 import System.Environment (getArgs)
 import Control.Distributed.Process

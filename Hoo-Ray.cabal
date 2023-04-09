@@ -34,7 +34,9 @@ common deps
         haskell-src-exts,
         syb,
         mtl,
-        HUnit
+        HUnit,
+        template-haskell,
+        binary
     ghc-options:
         -threaded
 
@@ -44,7 +46,9 @@ common distributed
         build-depends:
             distributed-process,
             distributed-process-simplelocalnet,
-            distributed-static
+            distributed-static,
+            network
+        other-modules: DistribUtils
     else
         buildable: False
 
@@ -65,6 +69,10 @@ executable serialize
 executable distributed-example
     import: deps, distributed
     main-is: Server/example.hs
+
+executable distributed-ping
+    import: deps, distributed
+    main-is: Server/ping.hs
 
 executable tests
     import: deps
