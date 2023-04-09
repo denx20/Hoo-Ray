@@ -1,13 +1,10 @@
-{-# INCLUDE "../DependencyGraph/graph.hs" #-}
-
 import Test.HUnit
-import qualified Graph
+import qualified DependencyGraph.Graph as Graph
+import System.Environment
 
 testAddition = TestCase (assertEqual "1+1=2" 2 (1+1))
 
 tests = TestList [testAddition]
-
-
 
 add :: Int -> Int -> Int
 add x y = x + y
@@ -19,7 +16,7 @@ main = do
   runTestTT tests
 
   putStrLn "Now calling the main function from Graph module:"
-  Graph.main
+  withArgs ["Tests/pure.hs"] Graph.main
   
   -- Call the `add` function and print the result
   let result = add 1 2

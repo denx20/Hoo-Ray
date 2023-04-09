@@ -52,7 +52,7 @@ common distributed
 
 executable dependency-graph
     import: deps
-    main-is: DependencyGraph/graph.hs
+    main-is: DependencyGraph/run-graph.hs
 
 executable expression-parser
     import: deps

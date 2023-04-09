@@ -1,4 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
+module DependencyGraph.Graph(main) where
+
 import Language.Haskell.Exts
 import System.Environment
 import Data.Maybe
@@ -8,8 +10,6 @@ import Data.List
 
 -- import qualified Data.HashSet as HashSet
 import Debug.Trace
-
-module Graph(main) where
 
 main :: IO ()
 main = do
