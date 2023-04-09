@@ -26,7 +26,7 @@ extractParens e = case e of
 
 main :: IO ()
 main = do
-  let code = "add (add (x * y) (y + z)) (y - z)"
+  let code = "multiply (add (x * y) (y + z)) (y - z)"
   let parsed = parseExp code
   case parsed of
     ParseOk ast -> do

@@ -19,4 +19,4 @@ main = do
     let w = add x y z
     let k = multiply x z
     let a = k `sub` y
-    print a
+    print

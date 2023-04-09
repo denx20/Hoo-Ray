@@ -5,10 +5,6 @@ import Language.Haskell.Exts
 import System.Environment
 import Data.Maybe
 import Data.List
--- import Data.Data
--- import Data.Generics.Uniplate.Data
-
--- import qualified Data.HashSet as HashSet
 import Debug.Trace
 
 main :: IO ()
@@ -18,7 +14,7 @@ main = do
         [fileName] -> do
             content <- readFile fileName
             case parseModule content of
-                ParseOk ast -> putStrLn $ showDataDependencies $ extractDataDependencies ast
+                ParseOk ast -> putStr $ showDataDependencies $ extractDataDependencies ast
                 ParseFailed _ errMsg -> error errMsg
         _ -> error "Usage: dependency-graph <file>"
 
