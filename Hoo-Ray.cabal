@@ -78,7 +78,7 @@ executable distributed-ping
 
 executable distributed-compute
     import: deps, distributed
-    main-is: Server/compute.hs
+    main-is: Server/remote-add.hs
 
 executable tests
     import: deps
