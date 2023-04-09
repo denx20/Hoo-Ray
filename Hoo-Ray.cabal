@@ -40,7 +40,7 @@ common deps
         random
     ghc-options:
         -threaded
-    hs-source-dirs: ., MISC
+    hs-source-dirs: ., MISC, Tests
     other-modules: SerializedFunction
 
 
@@ -92,3 +92,7 @@ executable tests
 executable arithmetic
     import: deps
     main-is: Tests/arithmetic.hs
+
+executable arithmetic_test
+    import: deps
+    main-is: Tests/arithmetic_test.hs
