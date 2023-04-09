@@ -36,7 +36,8 @@ common deps
         mtl,
         HUnit,
         template-haskell,
-        binary
+        binary,
+        random
     ghc-options:
         -threaded
     hs-source-dirs: ., MISC
@@ -59,6 +60,10 @@ common distributed
 executable dependency-graph
     import: deps
     main-is: DependencyGraph/run-graph.hs
+
+executable graph
+    import: deps
+    main-is: DependencyGraph/graph.hs
 
 executable expression-parser
     import: deps
@@ -83,3 +88,7 @@ executable distributed-compute
 executable tests
     import: deps
     main-is: Tests/test_dg.hs
+
+executable arithmetic
+    import: deps
+    main-is: Tests/arithmetic.hs
