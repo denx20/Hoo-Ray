@@ -39,6 +39,8 @@ common deps
         binary
     ghc-options:
         -threaded
+    hs-source-dirs: ., MISC
+    other-modules: SerializedFunction
 
 
 common distributed
@@ -73,6 +75,10 @@ executable distributed-example
 executable distributed-ping
     import: deps, distributed
     main-is: Server/ping.hs
+
+executable distributed-compute
+    import: deps, distributed
+    main-is: Server/compute.hs
 
 executable tests
     import: deps

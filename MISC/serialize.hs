@@ -1,23 +1,14 @@
-{-# LANGUAGE DeriveDataTypeable #-}
+import SerializedFunction
 
-import Data.Typeable
-import Data.Dynamic
-
-data SerializedFunction = SerializedFunction String Dynamic
-    deriving (Typeable, Show)
-
-serializeFunction :: (Typeable a, Typeable b) => String -> (a -> b) -> SerializedFunction
-serializeFunction name f = SerializedFunction name (toDyn f)
-
-deserializeFunction :: (Typeable a, Typeable b) => SerializedFunction -> Maybe (a -> b)
-deserializeFunction (SerializedFunction _ dynFunc) = fromDynamic dynFunc
-
--- Squares the input then add two. This can be an arbitrarily complex function
+-- Example operations
 squareThenAddTwo :: Int -> Int
 squareThenAddTwo x = x^2 + 2
 
 sumOfSquares :: Int -> Int -> Int
 sumOfSquares x y = x^2 + y^2
+
+add :: Int -> Int -> Int
+add x y = x + y
 
 main :: IO ()
 main = do
@@ -43,6 +34,3 @@ main = do
     case deserializedF of
         Just f -> putStrLn $ "Deserialized sumOfSquares result: " ++ show (f 2 3)
         Nothing -> putStrLn "Failed to deserialize the function"
-
-add :: Int -> Int -> Int
-add x y = x + y
