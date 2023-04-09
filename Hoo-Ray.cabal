@@ -33,7 +33,8 @@ common deps
         base >= 4.8 && < 5,
         haskell-src-exts,
         syb,
-        mtl
+        mtl,
+        HUnit
     ghc-options:
         -threaded
 
@@ -64,3 +65,7 @@ executable serialize
 executable distributed-example
     import: deps, distributed
     main-is: Server/example.hs
+
+executable tests
+    import: deps
+    main-is: Tests/test_dg.hs

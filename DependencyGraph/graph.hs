@@ -9,6 +9,8 @@ import Data.List
 -- import qualified Data.HashSet as HashSet
 import Debug.Trace
 
+module Graph(main) where
+
 main :: IO ()
 main = do
     args <- getArgs
