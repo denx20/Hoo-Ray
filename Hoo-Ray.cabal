@@ -36,7 +36,8 @@ common deps
         mtl,
         HUnit,
         template-haskell,
-        binary
+        binary,
+        silently
     ghc-options:
         -threaded
 
