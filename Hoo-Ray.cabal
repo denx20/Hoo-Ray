@@ -37,6 +37,7 @@ common deps
         HUnit,
         template-haskell,
         binary,
+        silently,
         random
     ghc-options:
         -threaded
