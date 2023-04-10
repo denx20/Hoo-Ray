@@ -95,9 +95,18 @@ executable arithmetic_test_gen
     import: deps
     main-is: Tests/arithmetic_test_gen.hs
 
+executable list_test_gen
+    import: deps
+    main-is: Tests/list_test_gen.hs
+
 executable arithmetic_test
     import: deps
     main-is: Tests/arithmetic_test.hs
+    Other-Modules: Arithmetic
+
+executable list_test
+    import: deps
+    main-is: Tests/list_test.hs
     Other-Modules: Arithmetic
 
 executable matmul

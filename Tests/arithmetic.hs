@@ -4,10 +4,11 @@ module Arithmetic (
     multiply,
     subtract,
     divide,
-    exponentiate
+    sum,
+    product
 ) where
 
-import Prelude hiding (subtract)
+import Prelude hiding (subtract, mapM, sum, product)
 import Data.Fixed (mod')
 import Data.List (foldl1')
 import Data.Traversable (sequenceA)
@@ -24,5 +25,8 @@ subtract x y = x - y
 divide :: Double -> Double -> Double
 divide x y = x / y
 
-exponentiate :: Double -> Double -> Double
-exponentiate x y = x ** y
+sum :: [Double] -> Double
+sum x = foldl1' add x
+
+product :: [Double] -> Double
+product x = foldl1' multiply x
