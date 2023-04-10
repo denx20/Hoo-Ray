@@ -97,3 +97,7 @@ executable arithmetic
 executable arithmetic_test
     import: deps
     main-is: Tests/arithmetic_test.hs
+
+executable run_random_graph
+    import: deps
+    main-is: Tests/generated_computation.hs
