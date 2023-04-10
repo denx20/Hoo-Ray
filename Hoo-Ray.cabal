@@ -38,7 +38,8 @@ common deps
         template-haskell,
         binary,
         silently,
-        random
+        random,
+        text
     ghc-options:
         -threaded
     hs-source-dirs: ., MISC, Tests
@@ -90,10 +91,11 @@ executable tests
     import: deps
     main-is: Tests/test_dg.hs
 
-executable arithmetic
+executable arithmetic_test_gen
     import: deps
-    main-is: Tests/arithmetic.hs
+    main-is: Tests/arithmetic_test_gen.hs
 
 executable arithmetic_test
     import: deps
     main-is: Tests/arithmetic_test.hs
+    Other-Modules: Arithmetic
