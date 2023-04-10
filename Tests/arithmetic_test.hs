@@ -15,13 +15,14 @@ instance Show PlainString where
 
 main :: IO ()
 main = do
-  putStrLn "Enter a positive integer N:"
-  n <- readLn :: IO Int
-  writeArithmeticTest n
-  putStrLn "arithmetic_test.hs has been generated."
   g <- newStdGen
-  let n1 = randomRs (1, 100) g :: ([Double])
-  let n2 = randomRs (1, 100) g :: ([Double])
+  -- let (n1, g1) = randomR (1, 100) g :: ([Double], StdGen)
+  -- print (take n rand_doubles)
+  -- let (n1, n2) = partition (even . fst) rand_doubles
+  let rand_doubles = randomRs (1, 100) g :: ([Double])
+  let (x1, x2) = partition (even . fst) (zip [0..] rand_doubles)
+  let (_, n1) = unzip x1
+  let (_, n2) = unzip x2
   let ops = randomRs (0, 4) g :: [Int]
   let functions = [add, mul, sub, divide, pow]
   let functionsStr = [PlainString "add", PlainString "mul", PlainString "sub", PlainString "divide", PlainString "pow"]
