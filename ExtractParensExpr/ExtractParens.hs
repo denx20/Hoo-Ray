@@ -6,12 +6,6 @@ import System.Environment (getArgs)
 type VarName = String
 type ExprInfo l = [(VarName, Exp l)]
 
-nextVar :: State Int VarName
-nextVar = do
-  i <- get
-  put (i + 1)
-  return $ "tmp" ++ show i
-
 extractParens :: Exp SrcSpanInfo -> State (Int, ExprInfo SrcSpanInfo) (Exp SrcSpanInfo)
 extractParens e = case e of
   Paren _ e1 -> do

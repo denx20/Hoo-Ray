@@ -99,3 +99,7 @@ executable arithmetic_test
     import: deps
     main-is: Tests/arithmetic_test.hs
     Other-Modules: Arithmetic
+
+executable matmul
+    import: deps
+    main-is: Tests/matmul.hs
