@@ -103,12 +103,12 @@ executable list_test_gen
 executable arithmetic_test
     import: deps
     main-is: Tests/arithmetic_test.hs
-    Other-Modules: Arithmetic
+    other-modules: Arithmetic
 
 executable list_test
     import: deps
     main-is: Tests/list_test.hs
-    Other-Modules: Arithmetic
+    other-modules: Arithmetic
 
 executable matmul
     import: deps
