@@ -1,5 +1,7 @@
 module MatMul(
-     generateRandomMatrix
+     generateRandomMatrix,
+     matrixBenchmark,
+     mmult
 ) where
 
 import Data.List
