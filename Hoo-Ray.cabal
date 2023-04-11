@@ -43,7 +43,7 @@ common deps
         mersenne-random-pure64
     ghc-options:
         -threaded
-    hs-source-dirs: ., MISC, Tests
+    hs-source-dirs: ., Misc, Tests
     other-modules: SerializedFunction
 
 
@@ -74,7 +74,7 @@ executable expression-parser
 
 executable serialize
     import: deps
-    main-is: MISC/serialize.hs
+    main-is: Misc/serialize.hs
 
 executable distributed-example
     import: deps, distributed
