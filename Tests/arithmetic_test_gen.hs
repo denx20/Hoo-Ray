@@ -1,4 +1,4 @@
--- generate_arithmetic_test.hs
+-- generate arithmetic_test.hs
 {-# LANGUAGE OverloadedStrings #-}
 
 import System.Random (randomRIO)

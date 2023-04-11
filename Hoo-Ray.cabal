@@ -113,3 +113,12 @@ executable list_test
 executable matmul
     import: deps
     main-is: Tests/matmul.hs
+
+executable matmul_test_gen
+    import: deps
+    main-is: Tests/matmul_test_gen.hs
+
+executable matmul_test
+    import: deps
+    main-is: Tests/matmul_test.hs
+    other-modules: MatMul
