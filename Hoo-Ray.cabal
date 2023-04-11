@@ -39,7 +39,8 @@ common deps
         binary,
         silently,
         random,
-        text
+        text,
+        mersenne-random-pure64
     ghc-options:
         -threaded
     hs-source-dirs: ., MISC, Tests
