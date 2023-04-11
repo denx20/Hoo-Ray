@@ -62,7 +62,7 @@ common distributed
 
 executable dependency-graph
     import: deps
-    main-is: DependencyGraph/run-graph.hs
+    main-is: DependencyGraph/run_graph.hs
 
 executable graph
     import: deps
@@ -70,7 +70,7 @@ executable graph
 
 executable expression-parser
     import: deps
-    main-is: ExtractParensExpr/ExtractParens.hs
+    main-is: ExtractParensExpr/extract_parens.hs
 
 executable serialize
     import: deps

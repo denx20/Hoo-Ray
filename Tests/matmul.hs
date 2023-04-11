@@ -1,7 +1,8 @@
 module MatMul(
      generateRandomMatrix,
      matrixBenchmark,
-     mmult
+     mmult,
+     getFirstElement
 ) where
 
 import Data.List
@@ -37,6 +38,9 @@ generateRandomMatrix m n range seed =
 chunksOf :: Int -> [a] -> [[a]]
 chunksOf _ [] = []
 chunksOf n xs = take n xs : chunksOf n (drop n xs)
+
+getFirstElement :: [[a]] -> a
+getFirstElement x = head (head x)
 
 main :: IO ()
 main = do
