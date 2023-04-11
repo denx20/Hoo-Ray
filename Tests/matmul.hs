@@ -17,11 +17,11 @@ import System.Random (StdGen, mkStdGen, randomRs)
 mmult :: Num a => [[a]] -> [[a]] -> [[a]] 
 mmult a b = [ [ sum $ zipWith (*) ar bc | bc <- (transpose b) ] | ar <- a ]
 
-matrixBenchmark :: Int -> Int -> Int -> IO()
-matrixBenchmark m n p = do
+matrixBenchmark :: Int -> Int -> Int -> Double -> Int -> IO()
+matrixBenchmark m n p range seed = do
      start <- getCPUTime
-     let a = generateRandomMatrix m n 100 512
-     let b = generateRandomMatrix n p 100 512
+     let a = generateRandomMatrix m n range seed
+     let b = generateRandomMatrix n p range seed 
      let x = mmult a b
      print (x !! 0 !! 0)
      end <- getCPUTime
@@ -40,4 +40,4 @@ chunksOf n xs = take n xs : chunksOf n (drop n xs)
 
 main :: IO ()
 main = do
-    matrixBenchmark 10000 5000 10000
+    matrixBenchmark 10000 5000 10000 100 512
