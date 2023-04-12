@@ -2,7 +2,9 @@
 
 Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Haskell. **TODO: Details about the modules and features in this package once all dust is settled**
 
-# Testing UDP multicast
+# Quickstart
+
+## Testing UDP multicast
 
 If you want to use the tools for distributed computing, first make sure that UDP multicast works with your configuration.
 
@@ -21,7 +23,7 @@ cd Server/c-test
 
 If UDP multicast is configured properly[^udp], you should see *Hello, World!* printed on the terminal with `listener` running.
 
-# Installing / Executing
+## Installation
 
 - Install the Haskell toolchain, preferably via [GHCup](https://www.haskell.org/ghcup/).
 
@@ -38,11 +40,39 @@ If UDP multicast is configured properly[^udp], you should see *Hello, World!* pr
 
 - Then, `cabal build` to build all the executables to make sure there are no critical errors.
 
-- Finally, `cabal run [program] -- [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the depeendency graph, one would do
+- Finally, `cabal run [program] [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the dependency graph, one would do
 
     ```
-    cabal run dependency-graph -- Tests/pure.hs
+    cabal run dependency-graph Tests/pure.hs
     ```
+
+## Current Modules
+
+##### dependency-graph
+
+Generates a dependency graph from input file. e.g. `cabal run dependency-graph Tests/pure1.hs`
+
+##### distributed-compute
+
+A simple example of a pair of master-slave server such that the master sends a job to a slave and the slave sends the job results back. All this logic is wrapped in the `Process ()` monad.
+
+The parameters of this module are in the form `'master <host> <port>' or 'slave <host> <port>'`. To run this module, execute `cabal run distributed-compute slave localhost 8081`. Then open another terminal and execute `cabal run distributed-compute master localhost 8084`.
+
+##### matmul_test_gen
+
+Generates a file with matrix multiplication operations.
+
+## Other modules
+
+These are modules that did not withstand the test of time. Their service is no longer required, because their functionalities either got replaced or did not prove to be useful in the grand scheme of our projects. But we provide a description for what they do.
+
+For instructions on how to run each module, try `cabal run module_name` first. If the module requires inputs, it should show a message about it.
+
+##### arithmetic_test_gen
+
+##### list_test_gen
+
+The above two tests are too fast (usually takes <1 millisecond to execute the entire file) and the network overhead from distributing does not pay off.
 
 # Developing
 
@@ -53,3 +83,4 @@ Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
 
 
 <!-- There is also a flag (-O) for GHC to compile everything aggressively optimized,  but that requires recompiling of all the existing libraries via `cabal install -p package --reinstall`-->
+
