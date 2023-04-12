@@ -5,19 +5,21 @@ from pathlib import Path
 from ast import literal_eval
 from networkx.drawing.nx_agraph import graphviz_layout
 
-beginning_string = '<-- Starting Dependency Graph Generation -->'
-ending_string = '<-- End of Dependency Graph Generation -->'
+## Modify these variables
+GRAPH_FILE = Path(__file__).parent / '..' / 'graph.out'
+GRAPH_FILE.resolve()
+OUTPUT_FILE = 'graph.png'
 
-graph_file = Path(__file__).parent / '..' / 'graph.out'
-graph_file.resolve()
+BEGINNING_STRING = '<-- Starting Dependency Graph Generation -->'
+ENDING_STRING = '<-- End of Dependency Graph Generation -->'
 
 G = nx.DiGraph()
 
-with open(graph_file) as f:
+with open(GRAPH_FILE) as f:
     lines = f.readlines()
     lines = [l.strip() for l in lines]
 
-    graph_lines = lines[lines.index(beginning_string) + 1: lines.index(ending_string)]
+    graph_lines = lines[lines.index(BEGINNING_STRING) + 1: lines.index(ENDING_STRING)]
     parsed_objects = list(map(literal_eval, graph_lines))
 
     for parent, children in parsed_objects:
@@ -41,4 +43,4 @@ pos = graphviz_layout(G, prog='dot')
 subax1 = plt.subplot(111)
 nx.draw(G, pos, with_labels=True, arrows=True, **options)
 
-plt.savefig('graph.png')
+plt.savefig(OUTPUT_FILE)
