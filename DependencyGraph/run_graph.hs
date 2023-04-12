@@ -1,9 +1,13 @@
 import System.Environment
-import qualified Graph
+import Graph(buildGraph, showDataDependencies)
 
 main :: IO ()
 main = do
   putStrLn "<-- Starting Dependency Graph Generation -->"
   args <- getArgs
-  withArgs args Graph.main
+  case args of
+      [fileName] -> do
+          graph <- buildGraph fileName
+          putStr $ showDataDependencies graph
+      _ -> error "Usage: dependency-graph <file>"
   putStrLn "<-- End of Dependency Graph Generation -->"

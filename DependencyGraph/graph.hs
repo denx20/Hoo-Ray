@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module Graph(main, DependencyGraph, showDataDependencies, extractDataDependencies) where
+module Graph(main, DependencyGraph, showDataDependencies, extractDataDependencies, buildGraph) where
 
 import Language.Haskell.Exts
 import System.Environment
@@ -18,6 +18,13 @@ main = do
                 ParseOk ast -> putStr $ showDataDependencies $ evalState (extractDataDependencies ast) 0
                 ParseFailed _ errMsg -> error errMsg
         _ -> error "Usage: dependency-graph <file>"
+  
+buildGraph :: String -> IO DependencyGraph
+buildGraph fileName = do
+    content <- readFile fileName
+    case parseModule content of
+        ParseOk ast -> return $ evalState (extractDataDependencies ast) 0
+        ParseFailed _ errMsg -> return []
 
 type DependencyGraph = [(String, [String])]
 
