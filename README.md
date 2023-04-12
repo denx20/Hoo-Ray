@@ -43,7 +43,7 @@ If UDP multicast is configured properly[^udp], you should see *Hello, World!* pr
 - Finally, `cabal run [program] [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the dependency graph, one would do
 
     ```
-    cabal run dependency-graph Tests/pure.hs
+    cabal run dependency-graph Tests/pure1.hs
     ```
 
 ## Current Modules

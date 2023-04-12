@@ -19,7 +19,7 @@ with open(GRAPH_FILE) as f:
     lines = f.readlines()
     lines = [l.strip() for l in lines]
 
-    graph_lines = lines[lines.index(beginning_string) + 1: lines.index(ending_string)]
+    graph_lines = lines[lines.index(BEGINNING_STRING) + 1: lines.index(ENDING_STRING)]
     parsed_objects = list(map(literal_eval, graph_lines))
 
     for parent, children in parsed_objects:
