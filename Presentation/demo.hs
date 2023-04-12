@@ -11,3 +11,17 @@ impure3 = do
     handle <- openFile "file.txt" ReadMode
     hGetContents handle
 
+pure1 :: Int -> Int -> Int
+pure1 a b = a * b
+
+pure2 :: Double
+pure2 = 3.14
+
+main :: IO ()
+main = do
+    result1 <- impure1
+    let result2 = pure1 10 20
+
+-- Pure functions
+subtract :: (Num a) => a -> a -> a
+map :: (a -> b) -> [a] -> [b]
