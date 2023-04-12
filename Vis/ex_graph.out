@@ -1,0 +1,9 @@
+Up to date
+<-- Starting Dependency Graph Generation -->
+("w", ["add"])
+("add", ["x","y","z"])
+("k", ["multiply"])
+("multiply", ["x","z"])
+("a", ["sub"])
+("sub", ["k","y"])
+<-- End of Dependency Graph Generation -->
