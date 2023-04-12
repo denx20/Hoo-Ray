@@ -13,6 +13,11 @@ OUTPUT_FILE = 'graph.png'
 BEGINNING_STRING = '<-- Starting Dependency Graph Generation -->'
 ENDING_STRING = '<-- End of Dependency Graph Generation -->'
 
+abbreviation = {'multiply': 'Mult', 'add': 'Add', 'sub': 'Sub', 'divide': 'Div'}
+
+def get_abbr(node):
+    return abbreviation[node] if node in abbreviation else node
+
 G = nx.DiGraph()
 
 with open(GRAPH_FILE) as f:
@@ -23,10 +28,10 @@ with open(GRAPH_FILE) as f:
     parsed_objects = list(map(literal_eval, graph_lines))
 
     for parent, children in parsed_objects:
-        G.add_node(parent)
-        G.add_nodes_from(children)
+        G.add_node(get_abbr(parent))
+        G.add_nodes_from([get_abbr(node) for node in children])
         for child in children:
-            G.add_edge(child, parent)
+            G.add_edge(get_abbr(child), get_abbr(parent))
 
 options = {
     # 'font_color': 'white',

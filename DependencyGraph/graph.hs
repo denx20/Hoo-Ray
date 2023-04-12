@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module DependencyGraph.Graph(main) where
+module Graph(main) where
 
 import Language.Haskell.Exts
 import System.Environment
