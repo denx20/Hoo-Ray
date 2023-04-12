@@ -1,7 +1,11 @@
+module ExtractParensExpr(extractParensExp) where
 import Data.Generics
 import Language.Haskell.Exts
 import Control.Monad.State
 import System.Environment (getArgs)
+import Data.Text (Text, pack)
+import Debug.Trace
+import Data.List (intercalate)
 
 type VarName = String
 type ExprInfo l = [(VarName, Exp l)]
@@ -18,26 +22,20 @@ extractParens e = case e of
     return $ App noSrcSpan e1' e2'
   _ -> return e
 
-main :: IO ()
-main = do
-  let code = "head (head (mmult a2 b2))"
+extractParensExp :: String -> String
+extractParensExp code = do
   let parsed = parseExp code
   case parsed of
     ParseOk ast -> do
       let (ast', (_, exprInfo)) = runState (extractParens ast) (0, [])
       let exprInfo' = reverse exprInfo
-      forM_ exprInfo' $ \(var, expr) -> do
-        putStrLn $ var ++ " = " ++ prettyPrint expr
-      putStrLn $ prettyPrint ast'
-    ParseFailed loc err -> putStrLn $ "Error at " ++ show loc ++ ": " ++ err
+      let res = mapM (\(var, expr) -> ["let " ++ var ++ " = " ++ prettyPrint expr]) exprInfo'
+      let res_ = unlines (res !! 0) ++ "let res = " ++ prettyPrint ast'
+      return res_ !! 0 
+    ParseFailed loc err -> return ("Error at " ++ show loc ++ ": " ++ err) !! 0
 
--- main :: IO ()
--- main = do
---   args <- getArgs
---   case args of
---     [fileName] -> do
---       result <- parseExpressionsFromFile fileName
---       case result of
---         Left err -> putStrLn $ "Error: " ++ show err
---         Right expressions -> print expressions
---     _ -> putStrLn "Usage: ./expression-parser <filename>"
+main :: IO ()
+main = do
+  let code = "fromIntegral (divide (end - start) (10 ^ 12 :: Double))"
+  let res = extractParensExp code
+  putStrLn res
