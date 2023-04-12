@@ -87,6 +87,8 @@ collectFunctionCalls vars expr = do
     collectOp _ _ _ = return []
 
     collectArgs (Var _ (UnQual _ (Ident _ v))) = ["v_" ++ v]
+    collectArgs (Lit _ (Int _ intVal _)) = [show intVal]
+    collectArgs (Lit _ (Frac _ doubleVal _)) = [show (fromRational doubleVal :: Double)]
     collectArgs (Paren _ e) = collectArgs e
     collectArgs _ = []
 
