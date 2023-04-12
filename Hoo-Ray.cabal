@@ -40,7 +40,9 @@ common deps
         silently,
         random,
         text,
-        containers
+        containers,
+        async, 
+        unordered-containers
     ghc-options:
         -threaded
     hs-source-dirs: ., Misc, Tests, DependencyGraph, ExtractParensExpr
@@ -53,7 +55,8 @@ common distributed
             distributed-process,
             distributed-process-simplelocalnet,
             distributed-static,
-            network
+            network,
+            network-transport-tcp
         other-modules: DistribUtils
     else
         buildable: False
@@ -123,3 +126,7 @@ executable matmul_test
     import: deps
     main-is: Tests/matmul_test.hs
     other-modules: MatMul
+
+executable queue
+    import: deps, distributed
+    main-is: DependencyGraph/queue.hs
