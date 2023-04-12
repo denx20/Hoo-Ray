@@ -13,7 +13,14 @@ OUTPUT_FILE = 'graph.png'
 BEGINNING_STRING = '<-- Starting Dependency Graph Generation -->'
 ENDING_STRING = '<-- End of Dependency Graph Generation -->'
 
-abbreviation = {'multiply': 'Mult', 'add': 'Add', 'sub': 'Sub', 'divide': 'Div'}
+abbreviation = {
+    'add': 'Add', 
+    'sub': 'Sub', 
+    'multiply': 'Mult', 
+    'divide': 'Div',
+    'increment': 'Incr',
+    'decrement': 'Decr'
+}
 
 def get_abbr(node):
     return abbreviation[node] if node in abbreviation else node
