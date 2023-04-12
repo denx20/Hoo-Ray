@@ -40,10 +40,10 @@ common deps
         silently,
         random,
         text,
-        mersenne-random-pure64
+        containers
     ghc-options:
         -threaded
-    hs-source-dirs: ., Misc, Tests
+    hs-source-dirs: ., Misc, Tests, DependencyGraph, ExtractParensExpr
     other-modules: SerializedFunction
 
 
@@ -63,6 +63,7 @@ common distributed
 executable dependency-graph
     import: deps
     main-is: DependencyGraph/run_graph.hs
+    other-modules: Graph
 
 executable graph
     import: deps

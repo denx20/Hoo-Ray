@@ -1,5 +1,5 @@
 import System.Environment
-import qualified DependencyGraph.Graph as Graph
+import qualified Graph
 
 main :: IO ()
 main = do

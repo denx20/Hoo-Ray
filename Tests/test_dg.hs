@@ -1,5 +1,5 @@
 import Test.HUnit
-import qualified DependencyGraph.Graph as Graph
+import qualified Graph
 import System.Environment (withArgs)
 import System.IO.Silently (capture_)
 
