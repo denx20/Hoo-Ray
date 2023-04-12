@@ -50,7 +50,9 @@ If UDP multicast is configured properly[^udp], you should see *Hello, World!* pr
 
 ##### dependency-graph
 
-Generates a dependency graph from input file. e.g. `cabal run dependency-graph Tests/pure1.hs`
+Generates a dependency graph (in text) from input file. e.g. `cabal run dependency-graph Tests/pure1.hs`
+
+We also have a Python script using [NetworkX](https://networkx.org) and [PyGraphviz](https://pygraphviz.github.io) to visualize the graph. To run it, first install these two packages in your Python environment. Then redirect the output of the above command via e.g. `cabal run dependency-graph Tests/pure1.hs > Vis/graph.out`. Finally, modify the corresponding variables in `Vis/fetch_graph.py` and run `python Vis/fetch_graph.py`.
 
 ##### distributed-compute
 
