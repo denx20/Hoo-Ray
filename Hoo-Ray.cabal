@@ -128,3 +128,4 @@ executable matmul_ms_test
 executable queue
     import: deps, distributed
     main-is: DependencyGraph/queue.hs
+    ghc-options: -O2

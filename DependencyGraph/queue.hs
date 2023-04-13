@@ -82,9 +82,10 @@ master backend nodes = do
   mapM_ say indegreeZeroNodes
   say ""
 
+  -- Something in the form of :: String -> Double
   resultsVar <- liftIO $ newMVar HM.empty
   nodeListVar <- liftIO $ newMVar nodes
-  runningJobsList <- liftIO $ newMVar
+  -- runningJobsList <- liftIO $ newMVar
 
   forM_ indegreeZeroNodes $ \node -> do
     let dependencyEdges = [(v, deps) | (v, deps) <- reversedGraph, node `elem` deps]
@@ -95,13 +96,13 @@ master backend nodes = do
       let rotatedList = rotate 1 currentList
       liftIO $ putMVar nodeListVar rotatedList
 
-  resultMap <- liftIO $ readMVar resultsVar
-  say $ "Execution results: " ++ show resultMap
+  -- resultMap <- liftIO $ readMVar resultsVar
+  -- say $ "Execution results: " ++ show resultMap
   liftIO $ threadDelay (200 * (10^6))
   terminateAllSlaves backend
 
 -- Busy loop keeping the master running
-masterLoop :: ()
+-- masterLoop :: ()
 
 slave :: Process ()
 slave = do
