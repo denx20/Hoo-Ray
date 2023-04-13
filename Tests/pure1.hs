@@ -1,15 +1,19 @@
--- A function with only pure functions (i.e. only `let`s in main)
+{-# LANGUAGE LambdaCase #-}
+
 add :: Int -> Int -> Int -> Int
 add x y z = x + y + z
 
-sub :: Int -> Int -> Int
-sub x y = x - y
-
 multiply :: Int -> Int -> Int
-multiply x y = x * y
+multiply x z = x * z
 
-divide :: Int -> Int -> Int
-divide x y = x `div` y
+sub :: Int -> Int -> Int -> Int
+sub k y = k - y
+
+increment :: Int -> Int
+increment x = x + 1
+
+decrement :: Int -> Int
+decrement x = x - 1
 
 main :: IO ()
 main = do
@@ -19,4 +23,37 @@ main = do
     let w = add x y z
     let k = multiply x z
     let a = k `sub` y
-    print
+
+    let b = increment a
+    let c = decrement b
+
+    let d = add a b c
+    let e = multiply d w
+    let f = sub e y
+    let g = add f x
+
+    let h = increment g
+    let i = decrement h
+
+    let j = add g h i
+    let k = multiply j f
+    let l = sub k h
+    let m = add l g
+
+    let n = increment m
+    let o = decrement n
+
+    let p = add m n o
+    let q = multiply p l
+    let r = sub q n
+    let s = add r m
+
+    let t = increment s
+    let u = decrement t
+
+    let v = add s t u
+    let w' = multiply v r
+    let x' = sub w' t
+    let y' = add x' s
+
+    print y'
