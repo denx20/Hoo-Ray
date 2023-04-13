@@ -6,7 +6,7 @@ import Control.Monad (replicateM)
 import Data.Text (Text, pack, unpack, intercalate)
 import Data.Text.IO (writeFile)
 import System.Environment
-import System.Random (newStdGen, randomRs)
+import System.Random (mkStdGen, randomRs)
 import Options.Applicative
 import Data.Semigroup ((<>))
 
@@ -61,10 +61,8 @@ generateMatrixFunctionCall m n range seed = pack ("generateRandomMatrix " ++ sho
 generateCalculateMatrixFunctionCall :: Int -> Int -> Int -> Int -> Int -> Double -> Text
 generateCalculateMatrixFunctionCall m n p seedA seedB range = pack ("calculateMatrix " ++ show m ++ " " ++ show n ++ " " ++ show p ++ " " ++ show seedA ++ " " ++ show seedB ++ " " ++ show range)
 
-getRandomSeeds :: Int -> Int -> IO [Int]
-getRandomSeeds n range = do
-    gen <- newStdGen
-    return $ take n (randomRs (1, range) gen)
+getRandomSeeds :: Int -> Int -> Int -> [Int]
+getRandomSeeds n range seed = take n (randomRs (1, range) (mkStdGen seed))
 
 main :: IO ()
 main = do
@@ -75,7 +73,7 @@ main = do
     let n = nInput options
     let p = pInput options
     let range = rangeInput options
-    seeds <- getRandomSeeds (2*nlines) 1000000
+    let seeds = getRandomSeeds (2*nlines) 1000000 512
     let as = getNVarNames nlines "a"
     let bs = getNVarNames nlines "b"
     let cs = getNVarNames nlines "c"
