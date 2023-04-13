@@ -5,6 +5,8 @@ from pathlib import Path
 from ast import literal_eval
 from networkx.drawing.nx_agraph import graphviz_layout
 
+plt.rcParams["figure.figsize"] = (5, 5)
+
 ## Modify these variables
 GRAPH_FILE = Path(__file__).parent / '..' / 'graph.out'
 GRAPH_FILE.resolve()
@@ -41,18 +43,25 @@ with open(GRAPH_FILE) as f:
             G.add_edge(get_abbr(child), get_abbr(parent))
 
 options = {
-    # 'font_color': 'white',
-    'node_color': 'yellow',
-    'node_size': 1000,
+    'node_size': 2000,
     'edgecolors': 'black',
     'width': 1,
     'arrowstyle': '-|>',
     'arrowsize': 12,
 }
 
+color_map = []
+for node in G:
+    if node[:2] == 'v_':
+        color_map.append('yellow')
+    elif node[:2] == 'f_':
+        color_map.append('aqua')
+    else:
+        color_map.append('violet')
+
 # nx.nx_agraph.write_dot(G,'temp.dot')
 pos = graphviz_layout(G, prog='dot')
 subax1 = plt.subplot(111)
-nx.draw(G, pos, with_labels=True, arrows=True, **options)
+nx.draw(G, pos, node_color=color_map, with_labels=True, arrows=True, **options)
 
 plt.savefig(OUTPUT_FILE)
