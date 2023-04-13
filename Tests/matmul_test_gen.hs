@@ -68,6 +68,7 @@ main :: IO ()
 main = do
     options <- execParser opts
     let useTime = useTimeInput options
+    if useTime then putStrLn "WARNING: Inline timing of execution using --time is DEPRECATED, use time from command line instead" else return ()
     let nlines = nlinesInput options
     let m = mInput options
     let n = nInput options
