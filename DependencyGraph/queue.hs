@@ -103,6 +103,8 @@ master backend nodes = do
   -- async processReply
   forever assignJobs
 
+  resultMap <- liftIO $ readMVar resultsVar
+  say $ "Execution results: " ++ show resultMap
   liftIO $ threadDelay (200 * (10^6))
   terminateAllSlaves backend
 
