@@ -55,14 +55,17 @@ executeFunctionAsync resultsVar edge = do
   liftIO $ modifyMVar_ resultsVar $ \hm -> return $ HM.insert (fst edge) result hm
 -}
 
-executeFunctionAsync :: Int -> MVar (HM.HashMap String Int) -> (String, [String]) -> Process (Async ())
-executeFunctionAsync workerId resultsVar edge = do
+executeFunctionAsync :: NodeId -> MVar (HM.HashMap String Int) -> (String, [String]) -> Process (Async ())
+executeFunctionAsync remoteNode resultsVar edge = do
   let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall edge))
-  remoteNode <- liftIO $ findRemoteNode workerId
   async $ do
     spawn remoteNode remoteCallClosure
-    liftIO $ putStrLn $ "Sent task to worker: " ++ show workerId
+    liftIO $ putStrLn $ "Sent task to worker: " ++ show remoteNOde
 
+-- Simple FIFO load balancing
+rotate :: Int -> [a] -> [a]
+rotate _ [] = []
+rotate n xs = zipWith const (drop n (cycle xs)) xs
 
 master :: Backend -> [NodeId] -> Process ()
 master backend nodes = do
@@ -71,11 +74,18 @@ master backend nodes = do
   let indegreeZeroNodes = findIndegreeZeroNodes reversedGraph
 
   resultsVar <- liftIO $ newMVar HM.empty
+  nodeListVar <- liftIO $ newMVar nodes
+
+  -- return ()
 
   forM_ indegreeZeroNodes $ \node -> do
     let dependencyEdges = [(v, deps) | (v, deps) <- reversedGraph, node `elem` deps]
     forM_ dependencyEdges $ \edge -> do
-      executeFunctionAsync resultsVar edge
+      currentList <- takeMVar nodeListVar
+      executeFunctionAsync (head currentList) resultsVar edge
+      let rotatedList = rotate 1 currentList
+      putMVar nodeListVar rotatedList
+
 
   resultMap <- liftIO $ readMVar resultsVar
   say $ "Execution results: " ++ show resultMap
