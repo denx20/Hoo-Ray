@@ -129,7 +129,6 @@ executable concurrency-module-benchmark
     main-is: Tests/concurrency_module_benchmark.hs
     other-modules: MatMul
 
-
 executable queue
     import: deps, distributed
     main-is: DependencyGraph/queue.hs

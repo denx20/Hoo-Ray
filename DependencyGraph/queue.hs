@@ -26,11 +26,11 @@ data RemoteCall = RemoteCall (String, [String])
 
 instance Binary RemoteCall
 
-remoteCall :: RemoteCall -> Process Int
-remoteCall (RemoteCall _) = return 1.0 --This is dummy, need to change
+remoteCall :: RemoteCall -> Process Float
+remoteCall (RemoteCall _) = return 1.0 -- TODO: This is dummy, need to change. RemoteCall should return remote worker's execution output
 
 
-reverseDependencyGraph :: DependencyGraph -> DependencyGraph
+reverseDependencyGraph :: DependencyGraph -> DependencyGraph  
 reverseDependencyGraph g = concatMap reverseEdges g
   where
     reverseEdges (v, vs) = [(v', [v]) | v' <- vs]
@@ -44,6 +44,7 @@ findIndegreeZeroNodes g =
 
 remotable ['remoteCall]
 
+-- TODO: executeFunctionAsync is still buggy
 executeFunctionAsync :: Int -> MVar (HM.HashMap String Int) -> (String, [String]) -> Process (Async Int)
 executeFunctionAsync workerId resultsVar edge = do
   let closure = mkClosure 'remoteCall (RemoteCall edge)
@@ -52,6 +53,7 @@ executeFunctionAsync workerId resultsVar edge = do
     liftIO $ modifyMVar_ resultsVar $ \hm -> return $ HM.insert (fst edge) result hm
     return result
 
+-- TODO: executeFunctions this is still buggy
 executeFunctions :: RemoteTable -> [String] -> DependencyGraph -> IO (HM.HashMap String Int)
 executeFunctions rtable indegreeZeroNodes depGraph = do
   resultsVar <- newMVar HM.empty
@@ -78,7 +80,13 @@ main = do
   let indegreeZeroNodes = findIndegreeZeroNodes reversedGraph
   putStrLn $ "Reversed Graph: " ++ show reversedGraph
   putStrLn $ "Nodes with in-degree 0: " ++ show indegreeZeroNodes
-  resultMap <- executeFunctions myRemoteTable indegreeZeroNodes reversedGraph
+
+  backend <- initializeBackend "localhost" "8080" rtable
+  node <- newLocalNode backend
+  resultMap <- runProcess node $ executeFunctions (__remoteTable initRemoteTable) indegreeZeroNodes reversedGraph
   putStrLn $ "Execution results: " ++ show resultMap
 
+  where
+    rtable :: RemoteTable
+    rtable = __remoteTable initRemoteTable
 
