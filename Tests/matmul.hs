@@ -2,7 +2,8 @@ module MatMul(
      generateRandomMatrix,
      matrixBenchmark,
      mmult,
-     getFirstElement
+     getFirstElement,
+     sumMatrix
 ) where
 
 import Data.List
@@ -10,7 +11,6 @@ import System.CPUTime
 import Text.Printf
 import Control.Exception
 import Control.Monad (replicateM)
-import System.Random.Mersenne.Pure64 (newPureMT, randomDouble, PureMT)
 import Control.Monad.ST (runST, ST)
 import Data.STRef (newSTRef, readSTRef, modifySTRef', STRef)
 import System.Random (StdGen, mkStdGen, randomRs)
@@ -41,6 +41,9 @@ chunksOf n xs = take n xs : chunksOf n (drop n xs)
 
 getFirstElement :: [[a]] -> a
 getFirstElement x = head (head x)
+
+sumMatrix :: [[Double]] -> Double
+sumMatrix x = sum (map sum x)
 
 main :: IO ()
 main = do

@@ -36,6 +36,6 @@ extractParensExp code = do
 
 main :: IO ()
 main = do
-  let code = "fromIntegral (divide (end - start) (10 ^ 12 :: Double))"
+  let code = "multiply (add (x * y) (y + z)) (y - z)"
   let res = extractParensExp code
   putStrLn res

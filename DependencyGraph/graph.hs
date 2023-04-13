@@ -18,7 +18,7 @@ main = do
                 ParseOk ast -> putStr $ showDataDependencies $ evalState (extractDataDependencies ast) 0
                 ParseFailed _ errMsg -> error errMsg
         _ -> error "Usage: dependency-graph <file>"
-  
+
 buildGraph :: String -> IO DependencyGraph
 buildGraph fileName = do
     content <- readFile fileName
