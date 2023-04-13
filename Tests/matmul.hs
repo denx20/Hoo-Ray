@@ -10,7 +10,6 @@ import System.CPUTime
 import Text.Printf
 import Control.Exception
 import Control.Monad (replicateM)
-import System.Random.Mersenne.Pure64 (newPureMT, randomDouble, PureMT)
 import Control.Monad.ST (runST, ST)
 import Data.STRef (newSTRef, readSTRef, modifySTRef', STRef)
 import System.Random (StdGen, mkStdGen, randomRs)
