@@ -44,7 +44,7 @@ common deps
         async, 
         unordered-containers
     ghc-options:
-        -threaded
+        -single-threaded
     hs-source-dirs: ., Misc, Tests, DependencyGraph, ExtractParensExpr
     other-modules: SerializedFunction
 
