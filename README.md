@@ -68,7 +68,7 @@ Output of `cabal run dependency-graph Tests/pure1.hs > Vis/graph.out` and `pytho
 
 A simple example of a pair of master-slave server such that the master sends a job to a slave and the slave sends the job results back. All this logic is wrapped in the `Process ()` monad.
 
-The parameters of this module are in the form `'master <host> <port>' or 'slave <host> <port>'`. To run this module, execute `cabal run distributed-compute slave localhost 8081`. Then open another terminal and execute `cabal run distributed-compute master localhost 8084`.
+The parameters of this module are in the form `'master <host> <port>' or 'slave <host> <port>'`. To run this module, execute `cabal run distributed-compute slave 127.0.0.1 8081`. Then open another terminal and execute `cabal run distributed-compute master 127.0.0.1 8084`.
 
 ##### matmul_test_gen
 
@@ -96,12 +96,19 @@ For instructions on how to run each module, try `cabal run module_name` first. I
 
 The above two tests are too fast (usually takes <1 millisecond to execute the entire file) and the network overhead from distributing does not pay off.
 
+##### distributed-example
+
+While not used in production, this module can be used to identify whether the Haskell `distributed-process-simplelocalnet` package is working correctly.
+- Run `cabal run distributed-example slave 127.0.0.1 8083` on one terminal.
+- Then run `cabal run distributed-example master 127.0.0.1 8084`. You should see something like `Slaves: [nid://127.0.0.1:8083:0]` on this terminal[^localhost_problem].
+
 # Developing
 
 Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
 
 [^udp]: In the particular case of misconfiguration that happened to me while running a Linux machine on Duke's network, I had to execute `sudo vim /etc/resolv.conf` and change the nameserver line to `nameserver 152.3.72.100`. Might not apply to you, but could be of interest to consult.
 [^deps]: If you get an error about Cabal cannot resolve dependencies while installing with `-f distributed`, downgrade your GHC to 8.4.4 with `ghcup tui` and try again.
+[^localhost_problem]: For some reason, using `localhost` here only occasionally works, but using `127.0.0.1` always works. Any networks person to explain why?
 
 
 <!-- There is also a flag (-O) for GHC to compile everything aggressively optimized,  but that requires recompiling of all the existing libraries via `cabal install -p package --reinstall`-->
