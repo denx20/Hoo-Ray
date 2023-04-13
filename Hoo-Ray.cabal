@@ -44,7 +44,7 @@ common deps
         async, 
         unordered-containers
     ghc-options:
-        -single-threaded
+        -threaded
     hs-source-dirs: ., Misc, Tests, DependencyGraph, ExtractParensExpr
     other-modules: SerializedFunction
 
@@ -128,3 +128,8 @@ executable concurrency-module-benchmark
     build-depends: monad-par, deepseq
     main-is: Tests/concurrency_module_benchmark.hs
     other-modules: MatMul
+
+
+executable queue
+    import: deps, distributed
+    main-is: DependencyGraph/queue.hs
