@@ -104,16 +104,6 @@ executable list_test_gen
     import: deps
     main-is: Tests/list_test_gen.hs
 
-executable arithmetic_test
-    import: deps
-    main-is: Tests/arithmetic_test.hs
-    other-modules: Arithmetic
-
-executable list_test
-    import: deps
-    main-is: Tests/list_test.hs
-    other-modules: Arithmetic
-
 executable matmul
     import: deps
     main-is: Tests/matmul.hs
@@ -127,12 +117,14 @@ executable matmul_test
     main-is: Tests/matmul_test.hs
     other-modules: MatMul
 
-executable queue
-    import: deps, distributed
-    main-is: DependencyGraph/queue.hs
-
 executable par-monad-benchmark
     import: deps, distributed
     build-depends: monad-par, deepseq
     main-is: Tests/par_monad_benchmark.hs
+    other-modules: MatMul
+
+executable concurrency-module-benchmark
+    import: deps, distributed
+    build-depends: monad-par, deepseq
+    main-is: Tests/concurrency_module_benchmark.hs
     other-modules: MatMul
