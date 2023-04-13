@@ -21,4 +21,4 @@ def impure2(a):
 def impure3():
     with open('file.txt') as f:
         text = f.read()
-    return f
+    return text

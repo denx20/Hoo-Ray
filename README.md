@@ -1,6 +1,8 @@
 # Hoo-Ray
 
-Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Haskell. **TODO: Details about the modules and features in this package once all dust is settled**
+Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Haskell. Hoo-Ray uses an abstract syntax tree parser to parsing the data dependencies in the main function of a given Haskell program, and a greedy scheduler for scheduling all computations that have their dependency ready.
+
+This project is done as part of the course [CS 512: Distributed Systems](https://courses.cs.duke.edu/spring23/compsci512/) at Duke University in Spring 2023.
 
 # Quickstart
 
@@ -58,6 +60,10 @@ Generates a dependency graph (in text) from input file. e.g. `cabal run dependen
 
 We also have a Python script using [NetworkX](https://networkx.org) and [PyGraphviz](https://pygraphviz.github.io) to visualize the graph. To run it, first install these two packages in your Python environment. Then redirect the output of the above command via e.g. `cabal run dependency-graph Tests/pure1.hs > Vis/graph.out`. Finally, modify the corresponding variables in `Vis/fetch_graph.py` and run `python Vis/fetch_graph.py`.
 
+Output of `cabal run dependency-graph Tests/pure1.hs > Vis/graph.out` and `python Vis/fetch_graph.py` as an example:
+
+![example graph](Vis/ex_graph.png)
+
 ##### distributed-compute
 
 A simple example of a pair of master-slave server such that the master sends a job to a slave and the slave sends the job results back. All this logic is wrapped in the `Process ()` monad.
@@ -66,7 +72,8 @@ The parameters of this module are in the form `'master <host> <port>' or 'slave 
 
 ##### matmul_test_gen
 
-Generates single-threaded (*Tests/matmul_ss_test.hs*) and multi-threaded (*Tests/matmul_ms_test.hs*) test files with matrix multiplication operations. For a detailed look at the configuration options, run 
+Generates single-threaded (*Tests/matmul_ss_test.hs*) and multi-threaded (*Tests/matmul_ms_test.hs*) test files with matrix multiplication operations. For a detailed look at the configuration options, run
+
 ```
 cabal run matmul_test_gen -- -h
 ```
@@ -74,6 +81,8 @@ To run the resulting multi-threaded test file, pass in the runtime flags like so
 ```
 cabal run matmul_ms_test -- +RTS -N
 ```
+
+We have deprecated the `-t` flag, so the way to time this function would be to use the `time` command. e.g. `time cabal run matmul_ms_test -- +RTS -N`.
 
 ## Other modules
 
@@ -97,3 +106,21 @@ Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
 
 <!-- There is also a flag (-O) for GHC to compile everything aggressively optimized,  but that requires recompiling of all the existing libraries via `cabal install -p package --reinstall`-->
 
+
+# Current benchmarking results
+
+#### Dennis' computer (2022 MacBook Pro, 10-core M1 Pro, Rosetta emulation (??))
+
+*@Dennis: fill in here and also figure out whether you had Rosetta while running these tests*
+
+#### Jaden's computer (2019 MacBook Pro, 8-core i9)
+
+100 lines, 100x1000x100 matrices.
+
+```
+cabal run matmul_test_gen -- -l 100 -m 100 -n 1000 -p 100 -r 1
+
+cabal run matmul_ms_test -- +RTS -N  120.58s user 10.18s system 1254% cpu 10.425 total
+
+cabal run matmul_ss_test  33.87s user 1.42s system 97% cpu 36.296 total
+```
