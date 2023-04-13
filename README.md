@@ -1,6 +1,6 @@
 # Hoo-Ray
 
-Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Haskell. Hoo-Ray uses an abstract syntax tree parser to parsing the data dependencies in the main function of a given Haskell program, and a greedy scheduler for scheduling all computations that have their dependency ready.
+Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Haskell. Hoo-Ray uses an abstract syntax tree parser for parsing the data dependencies in the main function of a given Haskell program, and a greedy scheduler for scheduling all computations that have their dependencies met.
 
 This project is done as part of the course [CS 512: Distributed Systems](https://courses.cs.duke.edu/spring23/compsci512/) at Duke University in Spring 2023.
 
@@ -107,20 +107,9 @@ Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
 <!-- There is also a flag (-O) for GHC to compile everything aggressively optimized,  but that requires recompiling of all the existing libraries via `cabal install -p package --reinstall`-->
 
 
-# Current benchmarking results
+# Current benchmark results
 
-#### Dennis' computer (2022 MacBook Pro, 10-core M1 Pro, Rosetta emulation (??))
-
-*@Dennis: fill in here and also figure out whether you had Rosetta while running these tests*
-
-#### Jaden's computer (2019 MacBook Pro, 8-core i9)
-
-100 lines, 100x1000x100 matrices.
-
-```
-cabal run matmul_test_gen -- -l 100 -m 100 -n 1000 -p 100 -r 1
-
-cabal run matmul_ms_test -- +RTS -N  120.58s user 10.18s system 1254% cpu 10.425 total
-
-cabal run matmul_ss_test  33.87s user 1.42s system 97% cpu 36.296 total
-```
+| Hardware Specs | Benchmark Parameters | Single-Thread Result | Multi-Thread Result |
+| ----------- | ----------- | ----------- | ----------- | 
+| 2021 MacBook Pro, 10-core M1 Max | -l 100 -m 100 -n 1000 -p 100 -r 1  | | |
+| 2019 MacBook Pro, 8-core i9      | -l 100 -m 100 -n 1000 -p 100 -r 1  |  |  |
