@@ -130,3 +130,9 @@ executable matmul_test
 executable queue
     import: deps, distributed
     main-is: DependencyGraph/queue.hs
+
+executable par-monad-benchmark
+    import: deps, distributed
+    build-depends: monad-par, deepseq
+    main-is: Tests/par_monad_benchmark.hs
+    other-modules: MatMul
