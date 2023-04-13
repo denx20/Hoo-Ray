@@ -4,7 +4,7 @@
 
 import Control.Distributed.Process hiding (Message)
 import Control.Distributed.Process.Closure
-import Control.Distributed.Process.Node (initRemoteTable)
+import Control.Distributed.Process.Node
 import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
@@ -55,12 +55,12 @@ executeFunctionAsync resultsVar edge = do
   liftIO $ modifyMVar_ resultsVar $ \hm -> return $ HM.insert (fst edge) result hm
 -}
 
-executeFunctionAsync :: NodeId -> MVar (HM.HashMap String Int) -> (String, [String]) -> Process (Async ())
-executeFunctionAsync remoteNode resultsVar edge = do
+executeFunctionAsync :: NodeId -> MVar (HM.HashMap String Int) -> (String, [String]) -> Process ()
+executeFunctionAsync nodeId resultsVar edge = do
   let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall edge))
-  async $ do
-    spawn remoteNode remoteCallClosure
-    liftIO $ putStrLn $ "Sent task to worker: " ++ show remoteNOde
+  _ <- spawn nodeId remoteCallClosure
+  liftIO $ putStrLn $ "Sent task to worker: " ++ show nodeId
+
 
 -- Simple FIFO load balancing
 rotate :: Int -> [a] -> [a]
@@ -76,28 +76,27 @@ master backend nodes = do
   resultsVar <- liftIO $ newMVar HM.empty
   nodeListVar <- liftIO $ newMVar nodes
 
-  -- return ()
-
   forM_ indegreeZeroNodes $ \node -> do
     let dependencyEdges = [(v, deps) | (v, deps) <- reversedGraph, node `elem` deps]
     forM_ dependencyEdges $ \edge -> do
-      currentList <- takeMVar nodeListVar
+      currentList <- liftIO $ takeMVar nodeListVar -- Lift this action
       executeFunctionAsync (head currentList) resultsVar edge
       let rotatedList = rotate 1 currentList
-      putMVar nodeListVar rotatedList
-
+      liftIO $ putMVar nodeListVar rotatedList -- Lift this action
 
   resultMap <- liftIO $ readMVar resultsVar
   say $ "Execution results: " ++ show resultMap
   liftIO $ threadDelay (200 * (10^6))
   terminateAllSlaves backend
 
+
 slave :: Process ()
 slave = do
   remoteCallClosure <- expect
-  result <- call remoteCallClosure
-  from <- expect :: Process ProcessId
-  send from result
+  liftIO $ print $ typeOf remoteCallClosure
+  -- result <- call remoteCallClosure
+  -- from <- expect :: Process ProcessId
+  -- send from result
   slave
 
 
