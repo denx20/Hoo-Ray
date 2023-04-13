@@ -108,8 +108,8 @@ Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
 
 
 # Current benchmark results
-
+Note: all benchmark results are wall clock times in secs, averaged over five runs. 
 | Hardware Specs | Benchmark Parameters | Single-Thread Result | Multi-Thread Result |
 | ----------- | ----------- | ----------- | ----------- | 
-| 2021 MacBook Pro, 10-core M1 Max | -l 100 -m 100 -n 1000 -p 100 -r 1  | | |
+| 2021 MacBook Pro, 10-core M1 Max | -l 100 -m 100 -n 1000 -p 100 -r 1  | 15.290 | 3.259 |
 | 2019 MacBook Pro, 8-core i9      | -l 100 -m 100 -n 1000 -p 100 -r 1  |  |  |
