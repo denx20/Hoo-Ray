@@ -40,11 +40,15 @@ If UDP multicast is configured properly[^udp], you should see *Hello, World!* pr
 
 - Then, `cabal build` to build all the executables to make sure there are no critical errors.
 
-- Finally, `cabal run [program] [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the dependency graph, one would do
-
+- Finally, `cabal run [program] [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the dependency graph for the file *Tests/pure1.hs*, one would do
     ```
     cabal run dependency-graph Tests/pure1.hs
     ```
+    If you wish to use command flags, run `cabal run [program] -- [-f1|--flag1] ...` . For example, to generate matrix multiplication benchmark files, one could do
+    ```
+    cabal run matmul_test_gen -- -l 50 -m 100 -n 1000 -p 100 -r 10
+    ```
+
 
 ## Current Modules
 
@@ -62,7 +66,14 @@ The parameters of this module are in the form `'master <host> <port>' or 'slave 
 
 ##### matmul_test_gen
 
-Generates a file with matrix multiplication operations.
+Generates single-threaded (*Tests/matmul_ss_test.hs*) and multi-threaded (*Tests/matmul_ms_test.hs*) test files with matrix multiplication operations. For a detailed look at the configuration options, run 
+```
+cabal run matmul_test_gen -- -h
+```
+To run the resulting multi-threaded test file, pass in the runtime flags like so:
+```
+cabal run matmul_ms_test -- +RTS -N
+```
 
 ## Other modules
 
