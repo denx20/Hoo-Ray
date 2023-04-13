@@ -42,9 +42,12 @@ common deps
         text,
         containers,
         async, 
-        unordered-containers
+        unordered-containers,
+        parallel,
+        time,
+        optparse-applicative
     ghc-options:
-        -single-threaded
+        -threaded
     hs-source-dirs: ., Misc, Tests, DependencyGraph, ExtractParensExpr
     other-modules: SerializedFunction
 
@@ -117,6 +120,11 @@ executable matmul_test
     main-is: Tests/matmul_test.hs
     other-modules: MatMul
 
+executable matmul_concurrent_test
+    import: deps
+    main-is: Tests/matmul_concurrent_test.hs
+    other-modules: MatMul
+
 executable par-monad-benchmark
     import: deps, distributed
     build-depends: monad-par, deepseq
@@ -128,3 +136,4 @@ executable concurrency-module-benchmark
     build-depends: monad-par, deepseq
     main-is: Tests/concurrency_module_benchmark.hs
     other-modules: MatMul
+    ghc-options: -threaded

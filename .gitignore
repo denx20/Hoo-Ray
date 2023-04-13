@@ -27,3 +27,4 @@ Tests/generated_computation.hs
 Tests/arithmetic_test.hs
 Tests/list_test.hs
 Tests/matmul_test.hs
+Tests/matmul_concurrent_test.hs

@@ -3,7 +3,8 @@ module MatMul(
      matrixBenchmark,
      mmult,
      getFirstElement,
-     sumMatrix
+     sumMatrix,
+     calculateMatrix
 ) where
 
 import Data.List
@@ -44,6 +45,13 @@ getFirstElement x = head (head x)
 
 sumMatrix :: [[Double]] -> Double
 sumMatrix x = sum (map sum x)
+
+calculateMatrix :: Int -> Int -> Int -> Int -> Int -> Double -> IO Double
+calculateMatrix m n p seedA seedB range = do
+  let a = generateRandomMatrix m n range seedA
+  let b = generateRandomMatrix n p range seedB
+  let c = mmult a b
+  return $ sumMatrix c
 
 main :: IO ()
 main = do
