@@ -9,7 +9,7 @@ import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
 import Control.Concurrent.Async
-import Control.Monad (forM_)
+import Control.Monad (forM_, mapM_)
 import qualified Data.HashMap.Strict as HM
 import System.Environment (getArgs)
 import Data.List ((\\), nub)
@@ -55,9 +55,10 @@ executeFunctionAsync resultsVar edge = do
   liftIO $ modifyMVar_ resultsVar $ \hm -> return $ HM.insert (fst edge) result hm
 -}
 
-executeFunctionAsync :: NodeId -> MVar (HM.HashMap String Int) -> (String, [String]) -> Process ()
-executeFunctionAsync nodeId resultsVar edge = do
-  let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall edge))
+executeFunctionAsync :: ProcessId -> NodeId  -> (String, [String]) -> Process ()
+executeFunctionAsync masterId nodeId edge = do
+  let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall edge masterId))
+  liftIO $ print $ typeOf remoteCallClosure
   _ <- spawn nodeId remoteCallClosure
   liftIO $ putStrLn $ "Sent task to worker: " ++ show nodeId
 
@@ -73,27 +74,39 @@ master backend nodes = do
   let reversedGraph = reverseDependencyGraph dependencyGraph
   let indegreeZeroNodes = findIndegreeZeroNodes reversedGraph
 
+  say "Master started"
+  say $ "Master discovered workers: " ++ (show nodes)
+  masterPid <- getSelfPid
+
+  say "indegree 0 nodes:"
+  mapM_ say indegreeZeroNodes
+  say ""
+
   resultsVar <- liftIO $ newMVar HM.empty
   nodeListVar <- liftIO $ newMVar nodes
+  runningJobsList <- liftIO $ newMVar
 
   forM_ indegreeZeroNodes $ \node -> do
     let dependencyEdges = [(v, deps) | (v, deps) <- reversedGraph, node `elem` deps]
+    -- Send their action to the nodes
     forM_ dependencyEdges $ \edge -> do
-      currentList <- liftIO $ takeMVar nodeListVar -- Lift this action
-      executeFunctionAsync (head currentList) resultsVar edge
+      currentList <- liftIO $ takeMVar nodeListVar
+      executeFunctionAsync masterPid (head currentList) edge
       let rotatedList = rotate 1 currentList
-      liftIO $ putMVar nodeListVar rotatedList -- Lift this action
+      liftIO $ putMVar nodeListVar rotatedList
 
   resultMap <- liftIO $ readMVar resultsVar
   say $ "Execution results: " ++ show resultMap
   liftIO $ threadDelay (200 * (10^6))
   terminateAllSlaves backend
 
+-- Busy loop keeping the master running
+masterLoop :: ()
 
 slave :: Process ()
 slave = do
-  remoteCallClosure <- expect
-  liftIO $ print $ typeOf remoteCallClosure
+  -- remoteCallClosure <- expect
+  -- liftIO $ print $ typeOf remoteCallClosure
   -- result <- call remoteCallClosure
   -- from <- expect :: Process ProcessId
   -- send from result
