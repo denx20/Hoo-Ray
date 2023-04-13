@@ -115,25 +115,16 @@ executable matmul_test_gen
     import: deps
     main-is: Tests/matmul_test_gen.hs
 
-executable matmul_test
+executable matmul_ss_test
     import: deps
-    main-is: Tests/matmul_test.hs
+    main-is: Tests/matmul_ss_test.hs
     other-modules: MatMul
 
-executable matmul_concurrent_test
+executable matmul_ms_test
     import: deps
-    main-is: Tests/matmul_concurrent_test.hs
+    main-is: Tests/matmul_ms_test.hs
     other-modules: MatMul
 
-executable par-monad-benchmark
+executable queue
     import: deps, distributed
-    build-depends: monad-par, deepseq
-    main-is: Tests/par_monad_benchmark.hs
-    other-modules: MatMul
-
-executable concurrency-module-benchmark
-    import: deps, distributed
-    build-depends: monad-par, deepseq
-    main-is: Tests/concurrency_module_benchmark.hs
-    other-modules: MatMul
-    ghc-options: -threaded
+    main-is: DependencyGraph/queue.hs

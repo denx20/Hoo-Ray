@@ -1,4 +1,4 @@
--- generate matmul_test.hs
+-- generate matmul_ss_test.hs and matmul_ms_test.hs
 {-# LANGUAGE OverloadedStrings #-}
 
 import System.Random (randomRIO)
@@ -24,7 +24,7 @@ optionsParser = Options
   <$> switch
       ( long "time"
      <> short 't'
-     <> help "Enable timing" )
+     <> help "[DEPRECATED] Enable timing" )
   <*> option auto
       ( long "nlines"
      <> short 'l'
@@ -81,10 +81,10 @@ main = do
     let cs = getNVarNames nlines "c"
     let tmps = getNVarNames nlines "tmp"
     let programText = "import MatMul\nimport Prelude\nimport Data.Time.Clock\n\nmain :: IO ()\nmain = do\n" <> (if useTime then "  start <- getCurrentTime\n" else "") <> mconcat (map (\i -> "  let " <> as !! i <> " = " <> generateMatrixFunctionCall m n range (seeds !! (2*i)) <> "\n  let " <> bs !! i <> " = " <> generateMatrixFunctionCall n p range (seeds !! (2*i+1)) <> "\n  let " <> cs !! i <> " = mmult " <> as !! i <> " " <> bs !! i <> "\n  let " <> tmps !! i <> " = sumMatrix " <> cs !! i <> "\n") [0..nlines-1]) <> "  let result_list = [" <> intercalate ", " tmps <> "]\n  let result = sum result_list\n  print result\n" <> (if useTime then "  end <- getCurrentTime\n  print (diffUTCTime end start)\n" else "")
-    Data.Text.IO.writeFile "Tests/matmul_test.hs" programText
-    putStrLn "matmul_test.hs has been generated."
+    Data.Text.IO.writeFile "Tests/matmul_ss_test.hs" programText
+    putStrLn "matmul_ss_test.hs has been generated."
     let concurrentProgramText = "import MatMul\nimport Control.Parallel (par, pseq)\nimport Data.Time.Clock\n\nmain :: IO ()\nmain = do\n" <> (if useTime then "  start <- getCurrentTime\n" else "") <> mconcat (map (\i -> "  " <> tmps !! i <> " <- " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2*i)) (seeds !! (2*i+1)) range <> "\n") [0..nlines-1]) <> "  let result_list = [" <> intercalate ", " tmps <> "]\n  let result = foldr1 (\\acc x -> x `par` (acc + x)) result_list\n  print result\n" <> (if useTime then "  end <- getCurrentTime\n  print (diffUTCTime end start)\n" else "")
-    Data.Text.IO.writeFile "Tests/matmul_concurrent_test.hs" concurrentProgramText
-    putStrLn "matmul_concurrent_test.hs has been generated."
+    Data.Text.IO.writeFile "Tests/matmul_ms_test.hs" concurrentProgramText
+    putStrLn "matmul_ms_test.hs has been generated."
     where
         opts = info (optionsParser <**> helper) ( fullDesc <> progDesc "Generate single-threaded and multi-threaded versions of matmul benchmark.")

@@ -26,5 +26,5 @@ cabal.project.local~
 Tests/generated_computation.hs
 Tests/arithmetic_test.hs
 Tests/list_test.hs
-Tests/matmul_test.hs
-Tests/matmul_concurrent_test.hs
+Tests/matmul_ss_test.hs
+Tests/matmul_ms_test.hs
