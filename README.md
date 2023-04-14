@@ -72,7 +72,7 @@ The parameters of this module are in the form `'master <host> <port>' or 'slave 
 
 ##### matmul_test_gen
 
-Generates single-threaded (*Tests/matmul_ss_test.hs*) and multi-threaded (*Tests/matmul_ms_test.hs*) test files with matrix multiplication operations. For a detailed look at the configuration options, run
+Generates single-threaded (*Tests/matmul_ss_test.hs*), multi-threaded (*Tests/matmul_ms_test.hs*), and queue.hs compatible (*Tests/matmul_test.hs*) test files (when called with the `-t` flag) with matrix multiplication operations. For a detailed look at the configuration options, run
 
 ```
 cabal run matmul_test_gen -- -h
@@ -82,11 +82,11 @@ To run the resulting multi-threaded test file, pass in the runtime flags like so
 cabal run matmul_ms_test -- +RTS -N
 ```
 
-We have deprecated the `-t` flag, so the way to time this function would be to use the `time` command. e.g. `time cabal run matmul_ms_test -- +RTS -N`.
+To time the execution of any program, use the `time` command (e.g. `time cabal run matmul_ms_test -- +RTS -N`).
 
 #### queue
 
-Runs the Hoo-Ray algorithm. More specifically, it generates the dependency graph for input program in master and dispatches jobs to be remotely executed on slave workers. **TODO: add more details here to give a full description of the Hoo-Ray algorithm**
+Runs the Hoo-Ray algorithm. More specifically, it generates the dependency graph for input test program in master and dispatches jobs to be remotely executed on slave workers. **TODO: add more details here to give a full description of the Hoo-Ray algorithm**
 
 To start a remote slave worker, run 
 
