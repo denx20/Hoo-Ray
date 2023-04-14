@@ -8,8 +8,8 @@ import Control.Distributed.Process.Node
 import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
--- import Control.Concurrent.Async
-import Control.Distributed.Process.Async
+import Control.Concurrent.Async (race_)
+import Control.Distributed.Process.Async 
 import Control.Monad (forM_, mapM_, forever, replicateM_)
 import qualified Data.HashMap.Strict as HM
 import System.Environment (getArgs)
@@ -37,14 +37,14 @@ instance Binary RemoteCall
 remoteCall :: RemoteCall -> Process ()
 remoteCall (RemoteCall node masterPid) = do
   -- say $ "Received task from master: " ++ node
-  liftIO $ putStrLn $ "Sup bro result to master: " ++ node
+  -- liftIO $ putStrLn $ "Sup bro result to master: " ++ node
   -- liftIO $ putStrLn $ "Received task from master: " ++ node
 
   -- result <- liftIO $ randomString 10
-  -- let result = "result"
-  -- say $ "H result to master: " ++ node
-  
+  -- let result = "result"  
   send masterPid (Result node "result")
+  say $ "Sent result to master: " ++ (show masterPid)
+
 
 randomString :: Int -> IO String
 randomString len = sequence [randomRIO ('a', 'z') | _ <- [1..len]]
@@ -58,7 +58,6 @@ dispatchJob :: ProcessId -> NodeId  -> String -> Process ()
 dispatchJob masterId nodeId node = do
   let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall node masterId))
   _ <- spawn nodeId remoteCallClosure
-  -- say "you boomer"
   liftIO $ putStrLn $ "Sent task to worker: " ++ show nodeId
 
 rotate :: [a] -> [a]
@@ -104,7 +103,6 @@ master backend nodes = do
               say $ "new node list: " ++ (show (rotate nodeList))
               say $ "updated queue: " ++ (show newQueue)
               dispatchJob masterPid worker job
-              say "Got back to assignJobs"
               liftIO $ threadDelay (1 * (10^6))
               assignJobs
   
@@ -112,14 +110,20 @@ master backend nodes = do
   let processReply :: Process ()
       processReply = do
         say "Waiting for reply"
-        Result node result <- expect
-        liftIO $ putStrLn $ "Received result: " ++ node ++ " -> " ++ result
-        indegrees <- liftIO $ readMVar indegreeMapVar
-        let updatedIndegrees = foldr (updateIndegreeMap node) indegrees (fromMaybe [] $ lookup node reversedGraph)
-        liftIO $ modifyMVar_ indegreeMapVar $ \_ -> return updatedIndegrees
-        liftIO $ modifyMVar_ queueVar $ \queue ->
-          let newNodes = [v | (v, indegree) <- HM.toList updatedIndegrees, indegree == 0, v `notElem` queue]
-          in return $ queue ++ newNodes
+        result <- expectTimeout (10 * (10^6)) :: Process (Maybe Message)
+        case result of
+          Just r -> do
+            say "Received result"
+          Nothing -> do
+            say "No result"
+        -- Result node result <- expect
+        -- liftIO $ putStrLn $ "Received result: " ++ node ++ " -> " ++ result
+        -- indegrees <- liftIO $ readMVar indegreeMapVar
+        -- let updatedIndegrees = foldr (updateIndegreeMap node) indegrees (fromMaybe [] $ lookup node reversedGraph)
+        -- liftIO $ modifyMVar_ indegreeMapVar $ \_ -> return updatedIndegrees
+        -- liftIO $ modifyMVar_ queueVar $ \queue ->
+        --   let newNodes = [v | (v, indegree) <- HM.toList updatedIndegrees, indegree == 0, v `notElem` queue]
+        --   in return $ queue ++ newNodes
         processReply
 
   let p :: Process ()
@@ -133,8 +137,6 @@ master backend nodes = do
   -- x <- async (AsyncTask p)
   -- forever processReply
   forever assignJobs
-  -- forever p
-  
 
   -- resultMap <- liftIO $ readMVar resultsVar
   -- say $ "Execution results: " ++ show resultMap
