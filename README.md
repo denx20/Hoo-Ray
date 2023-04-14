@@ -181,3 +181,6 @@ All time readings are rounded to the nearest decimal place since the timestamps 
 | 50 lines  | 14s           | 6s        | 6s        | 4s         | 3s         | 4s           |
 | 100 lines | 32s           | 13s       | 11s       | 9s         | 7s         | 8s           |
 | 200 lines | 53s           | 30s       | 25s       | 21s        | 19s        | 10s          |
+
+
+![results](Presentation/results.png)
