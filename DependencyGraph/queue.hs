@@ -139,6 +139,7 @@ master backend nodes = do
 
   say "Master started"
   say $ "Master discovered workers: " ++ (show nodes)
+  say $ "Number of workers: " ++ (show (length nodes))
   masterPid <- getSelfPid
 
   let assignJobs :: Process ()
@@ -186,7 +187,7 @@ master backend nodes = do
               processReply
             Nothing -> do
               say "No reply"
-              return ()
+              processReply
 
   assignJobsAsync <- async (AsyncTask assignJobs)
   processReply

@@ -86,7 +86,14 @@ To time the execution of any program, use the `time` command (e.g. `time cabal r
 
 #### queue
 
-Runs the Hoo-Ray algorithm. More specifically, it generates the dependency graph for input test program in master and dispatches jobs to be remotely executed on slave workers. **TODO: add more details here to give a full description of the Hoo-Ray algorithm**
+Runs the Hoo-Ray algorithm. More specifically, it generates the dependency graph for input test program in master and dispatches jobs to be remotely executed on slave workers.
+
+The dependency graph is first reversed such that (A depends on B) => (there is an edge from B to A). Then the following two procedures are done concurrently on the master node
+
+- *assignJobs*: Finds all the nodes with indegree 0 (computations that have all dependencies met) and assigns them to the slaves. When a job is dispatched, the master puts this node in a *visited* list such that this node is not sent again.
+- *processReply*: Listens for response from the worker nodes. When a computation has sent back its result, the indegree of all the nodes that depend on this computation is decremented.
+
+<!-- **TODO: add more details here to give a full description of the Hoo-Ray algorithm** -->
 
 To start a remote slave worker, run 
 
@@ -132,9 +139,45 @@ Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
 
 
 # Current benchmark results
-Note: all benchmark results are wall clock times in secs, averaged over five runs. 
+
+<!-- Note: all benchmark results are wall clock times in secs, averaged over five runs. 
 | Hardware Specs | Benchmark Parameters | Single-Thread Result | Multi-Thread Result |
 | ----------- | ----------- | ----------- | ----------- | 
 | 2021 MacBook Pro, 10-core M1 Max | -l 50 -m 100 -n 1000 -p 100 -r 1  | 15.290 | 3.259 |
 | 2021 MacBook Pro, 10-core M1 Pro | -l 50 -m 100 -n 1000 -p 100 -r 1  | 14.893 | 3.472 |
-| 2019 MacBook Pro, 8-core i9-9880H      | -l 50 -m 100 -n 1000 -p 100 -r 1  | 13.930 | 4.035 |
+| 2019 MacBook Pro, 8-core i9-9880H      | -l 50 -m 100 -n 1000 -p 100 -r 1  | 13.930 | 4.035 | -->
+
+<!-- ## Experiments -->
+
+All of the following tests are done on a 2019 MacBook Pro with i9-9880H (8 physical cores, 16 logical cores). The tests are generated via
+
+```
+cabal run matmul_test_gen -- -l {number_of_lines} -m 100 -n 1000 -p 100 -r 1 -t
+```
+
+The tests are run via one of
+
+```
+# Single thread
+time cabal run matmul_ss_test
+```
+
+```
+# Distributed parallel
+cabal run queue master 127.0.0.1 8084
+[keyboard interrupt]
+python benchmark_servers.py {num_servers}
+```
+
+```
+# Shared memory parallel
+time cabal run matmul_ms_test -- +RTS -N
+```
+
+All time readings are rounded to the nearest decimal place since the timestamps in the distributed process package are only to the integral seconds.
+
+|           | Single thread | 3 workers | 5 workers | 10 workers | 16 workers | SMP |
+|-----------|---------------|-----------|-----------|------------|------------|--------------|
+| 50 lines  | 14s           | 6s        | 6s        | 4s         | 3s         | 4s           |
+| 100 lines | 32s           | 13s       | 11s       | 9s         | 7s         | 8s           |
+| 200 lines | 53s           | 30s       | 25s       | 21s        | 19s        | 10s          |
