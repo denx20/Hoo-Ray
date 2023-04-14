@@ -84,6 +84,23 @@ cabal run matmul_ms_test -- +RTS -N
 
 We have deprecated the `-t` flag, so the way to time this function would be to use the `time` command. e.g. `time cabal run matmul_ms_test -- +RTS -N`.
 
+#### queue
+
+Runs the Hoo-Ray algorithm. More specifically, it generates the dependency graph for input program in master and dispatches jobs to be remotely executed on slave workers. **TODO: add more details here to give a full description of the Hoo-Ray algorithm**
+
+To start a remote slave worker, run 
+
+```
+cabal run queue slave <host> <port>
+```
+
+Then, to start the master, run 
+```
+cabal run queue master <host> <port>
+```
+
+**Remember to restart slave worker before starting the master worker (🍄 warning!)**
+
 ## Other modules
 
 These are modules that did not withstand the test of time. Their service is no longer required, because their functionalities either got replaced or did not prove to be useful in the grand scheme of our projects. But we provide a description for what they do.
