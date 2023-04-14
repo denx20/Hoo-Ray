@@ -12,17 +12,17 @@ import Control.Concurrent.Async (race_)
 import Control.Distributed.Process.Async 
 import Control.Monad (forM_, mapM_, forever, replicateM_)
 import qualified Data.HashMap.Strict as HM
+import qualified Data.HashSet as HS
 import System.Environment (getArgs)
-import Data.List ((\\), nub, delete)
+import Data.List ((\\), nub, delete, intercalate)
 import Data.Maybe
 import System.Random (randomRIO)
+import Graph 
 
 import GHC.Generics (Generic)
 import Data.Binary
 import Data.Typeable
 import Text.Printf
-
-type DependencyGraph = [(String, [String])]
 
 data Message = Result String String
   deriving (Typeable, Generic)
@@ -40,11 +40,9 @@ remoteCall (RemoteCall node masterPid) = do
   -- liftIO $ putStrLn $ "Sup bro result to master: " ++ node
   -- liftIO $ putStrLn $ "Received task from master: " ++ node
 
-  -- result <- liftIO $ randomString 10
-  -- let result = "result"  
+  result <- liftIO $ randomString 10
   send masterPid (Result node "result")
-  say $ "Sent result to master: " ++ (show masterPid)
-
+  -- say $ "Sent result to master: " ++ (show masterPid) ++ " " ++ node ++ " " ++ result
 
 randomString :: Int -> IO String
 randomString len = sequence [randomRIO ('a', 'z') | _ <- [1..len]]
@@ -75,6 +73,7 @@ master backend nodes = do
   queueVar <- liftIO $ newMVar indegreeZeroNodes
   indegreeMapVar <- liftIO $ newMVar $ HM.fromList indegreeCount
   resultsVar <- liftIO $ newMVar HM.empty
+  visitedVar <- liftIO $ newMVar HS.empty
 
   say "Master started"
   say $ "Master discovered workers: " ++ (show nodes)
@@ -88,20 +87,21 @@ master backend nodes = do
   let assignJobs :: Process ()
       assignJobs = do
           queue <- liftIO $ readMVar queueVar :: Process [String]
-          if null queue
+
+          if (null queue)
             then do
-              say "empty queue"
+              -- say "empty queue"
               liftIO $ threadDelay (1 * (10^6))
               assignJobs
             else do
-              say "Assigning jobs (non-empty queue)"
+              -- say "Assigning jobs (non-empty queue)"
               nodeList <- liftIO $ readMVar nodeListVar :: Process [NodeId]
               let (job, newQueue) = (head queue, tail queue)
               let worker = head nodeList
               liftIO $ modifyMVar_ queueVar $ \_ -> return newQueue
               liftIO $ modifyMVar_ nodeListVar $ \_ -> return $ rotate nodeList
-              say $ "new node list: " ++ (show (rotate nodeList))
-              say $ "updated queue: " ++ (show newQueue)
+              -- say $ "new node list: " ++ (show (rotate nodeList))
+              -- say $ "updated queue: " ++ (show newQueue)
               dispatchJob masterPid worker job
               liftIO $ threadDelay (1 * (10^6))
               assignJobs
@@ -109,34 +109,28 @@ master backend nodes = do
 
   let processReply :: Process ()
       processReply = do
-        say "Waiting for reply"
-        result <- expectTimeout (10 * (10^6)) :: Process (Maybe Message)
-        case result of
-          Just r -> do
-            say "Received result"
-          Nothing -> do
-            say "No result"
-        -- Result node result <- expect
-        -- liftIO $ putStrLn $ "Received result: " ++ node ++ " -> " ++ result
-        -- indegrees <- liftIO $ readMVar indegreeMapVar
-        -- let updatedIndegrees = foldr (updateIndegreeMap node) indegrees (fromMaybe [] $ lookup node reversedGraph)
-        -- liftIO $ modifyMVar_ indegreeMapVar $ \_ -> return updatedIndegrees
-        -- liftIO $ modifyMVar_ queueVar $ \queue ->
-        --   let newNodes = [v | (v, indegree) <- HM.toList updatedIndegrees, indegree == 0, v `notElem` queue]
-        --   in return $ queue ++ newNodes
+        Result node result <- expect
+        visited <- liftIO $ readMVar visitedVar
+        visited' <- liftIO $ modifyMVar visitedVar $ \_ -> return (HS.insert node visited, HS.insert node visited)
+        liftIO $ putStrLn $ "Received result: " ++ node ++ " -> " ++ result
+        indegrees <- liftIO $ readMVar indegreeMapVar
+        let updatedIndegrees = foldr (updateIndegreeMap node) indegrees (fromMaybe [] $ lookup node reversedGraph)
+        -- liftIO $ putStrLn (showDataDependencies reversedGraph)
+        -- liftIO $ putStrLn $ "MaybeGraph: " ++ (intercalate ", " (fromMaybe [] $ lookup node reversedGraph))
+        liftIO $ modifyMVar_ indegreeMapVar $ \_ -> return updatedIndegrees
+        liftIO $ modifyMVar_ queueVar $ \queue ->
+          let newNodes = [v | (v, indegree) <- HM.toList updatedIndegrees, indegree == 0, v `notElem` queue, v `notElem` visited']
+          in do
+            putStrLn $ "new nodes: " ++ (show newNodes)
+            putStrLn $ "new indegrees: " ++ (show updatedIndegrees)
+            return $ queue ++ newNodes
         processReply
 
-  let p :: Process ()
-      p = do
-        forever $ do
-          liftIO $ threadDelay (1 * (10^6))
-          say "sus amogu"
-  
-  processReplyAsync <- async (AsyncTask processReply)
-  -- assignJobsAsync <- async (AsyncTask assignJobs)
+  assignJobsAsync <- async (AsyncTask assignJobs)
+  forever processReply
+  -- processReplyAsync <- async (AsyncTask processReply)
   -- x <- async (AsyncTask p)
-  -- forever processReply
-  forever assignJobs
+  -- forever assignJobs
 
   -- resultMap <- liftIO $ readMVar resultsVar
   -- say $ "Execution results: " ++ show resultMap
@@ -148,9 +142,9 @@ updateIndegreeMap node v indegrees =
   HM.adjust (\indegree -> indegree - 1) v indegrees
 
 reverseDependencyGraph :: DependencyGraph -> DependencyGraph
-reverseDependencyGraph g = concatMap reverseEdges g
+reverseDependencyGraph g = HM.toList $ foldr reverseEdges HM.empty g
   where
-    reverseEdges (v, vs) = [(v', [v]) | v' <- vs]
+    reverseEdges (v, vs) revGraph = foldr (\v' acc -> HM.insertWith (++) v' [v] acc) revGraph vs
 
 -- Takes indegreeMap and returns list of nodes with indegree 0
 -- findIndegreeZeroNodes :: HashMap -> [String]
