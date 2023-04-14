@@ -28,3 +28,4 @@ Tests/arithmetic_test.hs
 Tests/list_test.hs
 Tests/matmul_ss_test.hs
 Tests/matmul_ms_test.hs
+Tests/matmul_test.hs

@@ -68,7 +68,7 @@ main :: IO ()
 main = do
     options <- execParser opts
     let test = testInput options
-    if test then putStrLn "Generating test files compatible with queue.hs" else return ()
+    if test then putStrLn "Generating matmul_test.hs compatible with queue.hs" else return ()
     let nlines = nlinesInput options
     let m = mInput options
     let n = nInput options
@@ -91,4 +91,4 @@ main = do
         else 
             return ()
     where
-        opts = info (optionsParser <**> helper) ( fullDesc <> progDesc "Generate single-threaded and multi-threaded versions of matmul benchmark.")
+        opts = info (optionsParser <**> helper) ( fullDesc <> progDesc "Generate single-threaded, multi-threaded, and queue.hs versions of matmul benchmark.")
