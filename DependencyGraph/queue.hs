@@ -14,11 +14,13 @@ import Control.Monad (forM_, mapM_, forever, replicateM_, replicateM)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
 import System.Environment (getArgs)
-import Data.List ((\\), nub, delete, intercalate)
+import Data.List ((\\), nub, delete, intercalate, span, foldl')
 import Data.Maybe
 import System.Random (randomRIO)
 import Data.Hashable (Hashable)
 import Graph 
+import Data.Char (isDigit)
+import MatMul
 
 import GHC.Generics (Generic)
 import Data.Binary
@@ -44,56 +46,89 @@ data Message = Result String Double
 
 instance Binary Message
 
-data RemoteCall = RemoteCall String ProcessId (HM.HashMap String Double)
+data RemoteCall = RemoteCall String ProcessId (HM.HashMap String Double) (HM.HashMap String [String])
   deriving (Show, Typeable, Generic)
 
 instance Binary RemoteCall
 
+extractMiddle :: String -> String
+extractMiddle ('f':'_':rest) = fst $ span (not . isDigit) rest
+extractMiddle _ = error "Invalid input format"
 
 remoteCall :: RemoteCall -> Process ()
-remoteCall (RemoteCall node masterPid dataMap) = do
+remoteCall (RemoteCall node masterPid resultMap depGraph) = do
   case getPrefix node of
-        -- "v_" -> handleV
-        -- "f_" -> handleF
+        "v_" -> handleV
+        "f_" -> handleF
         _    -> handleArgs
   where
     getPrefix :: String -> String
     getPrefix str = take 2 str
 
-    -- handleV :: Process ()
-    -- handleV = putStrLn "Handling 'v_' prefix."
+    handleV :: Process ()
+    handleV = do
+      -- say $ "HANDLING node " ++ node
+      let fname = head (fromMaybe [] $ HM.lookup node depGraph)
+      let result = fromMaybe (-1) (HM.lookup fname resultMap) :: Double
+      send masterPid (Result node result)
 
-    -- handleF :: Process ()
-    -- handleF = putStrLn "Handling 'f_' prefix."
+      
+    handleF :: Process ()
+    handleF = do
+      -- say $ "HANDLING node " ++ node
+      let deps = fromMaybe [] (HM.lookup node depGraph)
+      let vals = map (\x -> fromMaybe (-1) (HM.lookup x resultMap)) deps
+      case extractMiddle node of
+        "calculateMatrix" -> do
+          let result = calculateMatrix (vals !! 0) (vals !! 1) (vals !! 2) (vals !! 3) (vals !! 4) (vals !! 5)
+          send masterPid (Result node result)
 
     handleArgs :: Process ()
     handleArgs = do
-      say $ "received map: " ++ (show dataMap)
+      -- say $ "HANDLING node " ++ node
       send masterPid (Result node (read node :: Double))
-
-randomString :: Int -> IO String
-randomString len = sequence [randomRIO ('a', 'z') | _ <- [1..len]]
 
 remotable ['remoteCall]
 
 myRemoteTable :: RemoteTable
 myRemoteTable = Main.__remoteTable initRemoteTable
 
-dispatchJob :: ProcessId -> NodeId  -> String -> (HM.HashMap String Double) -> Process ()
-dispatchJob masterId nodeId node resultMap = do
-  let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall node masterId resultMap))
+dispatchJob :: ProcessId -> NodeId  -> String -> (HM.HashMap String Double) -> (HM.HashMap String [String]) -> Process ()
+dispatchJob masterId nodeId node resultMap depGraph = do
+  let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall node masterId resultMap depGraph))
   _ <- spawn nodeId remoteCallClosure
-  liftIO $ putStrLn $ "Sent task to worker: " ++ show nodeId
+  -- liftIO $ putStrLn $ "Sent task to worker: " ++ show nodeId ++ " for node: " ++ node
+  return ()
 
 rotate :: [a] -> [a]
 rotate [] = []
 rotate xs = tail xs ++ [head xs]
 
+indegreeCounts :: DependencyGraph -> [(String, Int)]
+indegreeCounts graph = HM.toList $ foldl' updateOutdegree HM.empty graph
+  where
+    updateOutdegree hm (node, edges) = 
+      let updatedHM = HM.insertWith (+) node (length edges) hm
+      in foldl' (\acc edge -> HM.insertWith (const id) edge 0 acc) updatedHM edges
+
+sumVtmpValues :: HM.HashMap String Double -> Double
+sumVtmpValues hm = HM.foldrWithKey accumulateVtmpValues 0 hm
+  where
+    accumulateVtmpValues key value acc =
+      if "v_tmp" `isPrefixOf` key
+        then acc + value
+        else acc
+
+    isPrefixOf :: String -> String -> Bool
+    isPrefixOf prefix str = take (length prefix) str == prefix
+
+
 master :: Backend -> [NodeId] -> Process ()
 master backend nodes = do
-  let dependencyGraph = [("A", ["B", "C"]), ("B", ["D"]), ("C", ["D"]), ("10", []), ("20", [])] :: DependencyGraph
-  let reversedGraph = reverseDependencyGraph dependencyGraph :: DependencyGraph
-  let indegreeCount = [(v, length vs) | (v, vs) <- dependencyGraph] :: [(String, Int)]
+  dependencyGraph <- liftIO $ buildGraph "Tests/matmul_ms_test.hs"
+  let depGraph = HM.fromList dependencyGraph :: HM.HashMap String [String]
+  let reversedGraph = reverseDependencyGraph dependencyGraph :: HM.HashMap String [String]
+  let indegreeCount = indegreeCounts dependencyGraph :: [(String, Int)]
   let indegreeZeroNodes = map (\(node, cnt) -> node) $ filter (\(v, indegree) -> indegree == 0) indegreeCount :: [String]
 
   nodeListVar <- liftIO $ newMVar nodes
@@ -106,22 +141,17 @@ master backend nodes = do
   say $ "Master discovered workers: " ++ (show nodes)
   masterPid <- getSelfPid
 
-  queue <- liftIO $ readMVar queueVar
-  say $ "queue " ++ (show queue)
-  indegreeMap <- liftIO $ readMVar indegreeMapVar
-  say $ "indegreeMap " ++ (show indegreeMap)
-
   let assignJobs :: Process ()
       assignJobs = do
           queue <- liftIO $ readMVar queueVar :: Process [String]
-
           if (null queue)
             then do
-              -- say "empty queue"
-              liftIO $ threadDelay (1 * (10^6))
-              assignJobs
+              say "Queue is empty, waiting for results"
+              liftIO $ threadDelay (1 * (10^1))
+              results <- liftIO $ readMVar resultsVar :: Process (HM.HashMap String Double)
+              say $ "Final result: " ++ (show (sumVtmpValues results))
+              return ()
             else do
-              -- say "Assigning jobs (non-empty queue)"
               nodeList <- liftIO $ readMVar nodeListVar :: Process [NodeId]
               results <- liftIO $ readMVar resultsVar :: Process (HM.HashMap String Double)
               let (job, newQueue) = (head queue, tail queue)
@@ -130,57 +160,46 @@ master backend nodes = do
               liftIO $ modifyMVar_ nodeListVar $ \_ -> return $ rotate nodeList
               -- say $ "new node list: " ++ (show (rotate nodeList))
               -- say $ "updated queue: " ++ (show newQueue)
-              dispatchJob masterPid worker job results
-              liftIO $ threadDelay (1 * (10^6))
+              dispatchJob masterPid worker job results depGraph
               assignJobs
   
 
   let processReply :: Process ()
       processReply = do
-        Result node result <- expect
-        visited <- liftIO $ readMVar visitedVar
-        visited' <- liftIO $ modifyMVar visitedVar $ \_ -> return (HS.insert node visited, HS.insert node visited)
-        liftIO $ putStrLn $ "Received result: " ++ node ++ " -> " ++ (show result)
-        results <- liftIO $ readMVar resultsVar
-        results' <- liftIO $ modifyMVar resultsVar $ \_ -> return (HM.insert node result results, HM.insert node result results)
+        maybeResult <- expectTimeout (1 * (10^6))
+        case maybeResult of 
+            Just (Result node result) -> do
+              visited <- liftIO $ readMVar visitedVar
+              visited' <- liftIO $ modifyMVar visitedVar $ \_ -> return (HS.insert node visited, HS.insert node visited)
+              -- liftIO $ putStrLn $ "Received result: " ++ node ++ " -> " ++ (show result)
+              results <- liftIO $ readMVar resultsVar
+              results' <- liftIO $ modifyMVar resultsVar $ \_ -> return (HM.insert node result results, HM.insert node result results)
 
-        say $ "Result map: " ++ (show results')
-        indegrees <- liftIO $ readMVar indegreeMapVar
-        let updatedIndegrees = foldr (updateIndegreeMap node) indegrees (fromMaybe [] $ lookup node reversedGraph)
-        -- liftIO $ putStrLn (showDataDependencies reversedGraph)
-        -- liftIO $ putStrLn $ "MaybeGraph: " ++ (intercalate ", " (fromMaybe [] $ lookup node reversedGraph))
-        liftIO $ modifyMVar_ indegreeMapVar $ \_ -> return updatedIndegrees
-        liftIO $ modifyMVar_ queueVar $ \queue ->
-          let newNodes = [v | (v, indegree) <- HM.toList updatedIndegrees, indegree == 0, v `notElem` queue, v `notElem` visited']
-          in do
-            putStrLn $ "new nodes: " ++ (show newNodes)
-            putStrLn $ "new indegrees: " ++ (show updatedIndegrees)
-            return $ queue ++ newNodes
-        processReply
+              -- say $ "Result map: " ++ (show results')
+              indegrees <- liftIO $ readMVar indegreeMapVar
+              let updatedIndegrees = foldr (updateIndegreeMap node) indegrees (fromMaybe [] $ HM.lookup node reversedGraph)
+              liftIO $ modifyMVar_ indegreeMapVar $ \_ -> return updatedIndegrees
+              liftIO $ modifyMVar_ queueVar $ \queue ->
+                let newNodes = [v | (v, indegree) <- HM.toList updatedIndegrees, indegree == 0, v `notElem` queue, v `notElem` visited']
+                in do
+                  return $ queue ++ newNodes
+              processReply
+            Nothing -> do
+              say "No reply"
+              return ()
 
   assignJobsAsync <- async (AsyncTask assignJobs)
-  forever processReply
-  -- processReplyAsync <- async (AsyncTask processReply)
-  -- x <- async (AsyncTask p)
-  -- forever assignJobs
-
-  -- resultMap <- liftIO $ readMVar resultsVar
-  -- say $ "Execution results: " ++ show resultMap
-  liftIO $ threadDelay (200 * (10^6))
+  processReply
   terminateAllSlaves backend
 
 updateIndegreeMap :: String -> String -> HM.HashMap String Int -> HM.HashMap String Int
 updateIndegreeMap node v indegrees =
   HM.adjust (\indegree -> indegree - 1) v indegrees
 
-reverseDependencyGraph :: DependencyGraph -> DependencyGraph
-reverseDependencyGraph g = HM.toList $ foldr reverseEdges HM.empty g
+reverseDependencyGraph :: DependencyGraph -> HM.HashMap String [String]
+reverseDependencyGraph g = foldr reverseEdges HM.empty g
   where
     reverseEdges (v, vs) revGraph = foldr (\v' acc -> HM.insertWith (++) v' [v] acc) revGraph vs
-
--- Takes indegreeMap and returns list of nodes with indegree 0
--- findIndegreeZeroNodes :: HashMap -> [String]
--- findIndegreeZeroNodes indegreeMap = HM.keys $ HM.filter (== 0) indegreeMap
 
 main :: IO ()
 main = do

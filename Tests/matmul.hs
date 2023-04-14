@@ -1,10 +1,12 @@
+{-# OPTIONS -fglasgow-exts #-}
 module MatMul(
      generateRandomMatrix,
      matrixBenchmark,
      mmult,
      getFirstElement,
      sumMatrix,
-     calculateMatrix
+     calculateMatrix,
+     build
 ) where
 
 import Data.List
@@ -15,6 +17,20 @@ import Control.Monad (replicateM)
 import Control.Monad.ST (runST, ST)
 import Data.STRef (newSTRef, readSTRef, modifySTRef', STRef)
 import System.Random (StdGen, mkStdGen, randomRs)
+import Data.Typeable
+import Data.Char (isDigit)
+
+class BuildList a r  | r -> a where
+    build' :: [a] -> a -> r
+
+instance BuildList a [a] where
+    build' l x = reverse$ x:l
+
+instance BuildList a r => BuildList a (a->r) where
+    build' l x y = build'(x:l) y
+
+build :: forall r a. (BuildList a r) => a -> r
+build x = build' [] x
 
 mmult :: Num a => [[a]] -> [[a]] -> [[a]] 
 mmult a b = [ [ sum $ zipWith (*) ar bc | bc <- (transpose b) ] | ar <- a ]
@@ -46,13 +62,24 @@ getFirstElement x = head (head x)
 sumMatrix :: [[Double]] -> Double
 sumMatrix x = sum (map sum x)
 
-calculateMatrix :: Int -> Int -> Int -> Int -> Int -> Double -> IO Double
-calculateMatrix m n p seedA seedB range = do
-  let a = generateRandomMatrix m n range seedA
-  let b = generateRandomMatrix n p range seedB
-  let c = mmult a b
-  return $ sumMatrix c
+calculateMatrix :: Double -> Double -> Double -> Double -> Double -> Double -> Double
+calculateMatrix m n p seedA seedB range = sumMatrix (mmult a b)
+    where
+        m' = round m
+        n' = round n
+        p' = round p
+        seedA' = round seedA
+        seedB' = round seedB
+        a = generateRandomMatrix m' n' range seedA'
+        b = generateRandomMatrix n' p' range seedB'
+
+extractMiddle :: String -> String
+extractMiddle ('f':'_':rest) = fst $ span (not . isDigit) rest
+extractMiddle _ = error "Invalid input format"
 
 main :: IO ()
 main = do
-    matrixBenchmark 10000 5000 10000 100 512
+    -- matrixBenchmark 10000 5000 10000 100 512
+    -- print $ extractMiddle "f_generateRandomMatrix3428343"
+    -- let x = build 1 2 3 4 5 :: [Int]
+    print $ calculateMatrix 10.0 1000 100 123.0 512 100

@@ -131,3 +131,4 @@ executable queue
     import: deps, distributed
     main-is: DependencyGraph/queue.hs
     ghc-options: -O2
+    other-modules: Graph, MatMul
