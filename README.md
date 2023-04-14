@@ -119,4 +119,5 @@ Note: all benchmark results are wall clock times in secs, averaged over five run
 | Hardware Specs | Benchmark Parameters | Single-Thread Result | Multi-Thread Result |
 | ----------- | ----------- | ----------- | ----------- | 
 | 2021 MacBook Pro, 10-core M1 Max | -l 50 -m 100 -n 1000 -p 100 -r 1  | 15.290 | 3.259 |
+| 2021 MacBook Pro, 10-core M1 Pro | -l 50 -m 100 -n 1000 -p 100 -r 1  | 14.893 | 3.472 |
 | 2019 MacBook Pro, 8-core i9-9880H      | -l 50 -m 100 -n 1000 -p 100 -r 1  | 13.930 | 4.035 |
