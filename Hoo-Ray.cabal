@@ -45,7 +45,8 @@ common deps
         unordered-containers,
         parallel,
         time,
-        optparse-applicative
+        optparse-applicative,
+        distributed-process-async
     ghc-options:
         -threaded
     hs-source-dirs: ., Misc, Tests, DependencyGraph, ExtractParensExpr
