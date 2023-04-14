@@ -10,13 +10,14 @@ import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
 import Control.Concurrent.Async (race_)
 import Control.Distributed.Process.Async 
-import Control.Monad (forM_, mapM_, forever, replicateM_)
+import Control.Monad (forM_, mapM_, forever, replicateM_, replicateM)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
 import System.Environment (getArgs)
 import Data.List ((\\), nub, delete, intercalate)
 import Data.Maybe
 import System.Random (randomRIO)
+import Data.Hashable (Hashable)
 import Graph 
 
 import GHC.Generics (Generic)
@@ -24,25 +25,51 @@ import Data.Binary
 import Data.Typeable
 import Text.Printf
 
-data Message = Result String String
+instance (Binary k, Binary v, Eq k, Hashable k) => Binary (HM.HashMap k v) where
+  put hashMap = do
+    put (HM.size hashMap)
+    forM_ (HM.toList hashMap) $ \(k, v) -> do
+      put k
+      put v
+
+  get = do
+    size <- get
+    fmap HM.fromList $ replicateM size $ do
+      k <- get
+      v <- get
+      return (k, v)
+
+data Message = Result String Double
   deriving (Typeable, Generic)
 
 instance Binary Message
 
-data RemoteCall = RemoteCall String ProcessId
+data RemoteCall = RemoteCall String ProcessId (HM.HashMap String Double)
   deriving (Show, Typeable, Generic)
 
 instance Binary RemoteCall
 
-remoteCall :: RemoteCall -> Process ()
-remoteCall (RemoteCall node masterPid) = do
-  -- say $ "Received task from master: " ++ node
-  -- liftIO $ putStrLn $ "Sup bro result to master: " ++ node
-  -- liftIO $ putStrLn $ "Received task from master: " ++ node
 
-  result <- liftIO $ randomString 10
-  send masterPid (Result node "result")
-  -- say $ "Sent result to master: " ++ (show masterPid) ++ " " ++ node ++ " " ++ result
+remoteCall :: RemoteCall -> Process ()
+remoteCall (RemoteCall node masterPid dataMap) = do
+  case getPrefix node of
+        -- "v_" -> handleV
+        -- "f_" -> handleF
+        _    -> handleArgs
+  where
+    getPrefix :: String -> String
+    getPrefix str = take 2 str
+
+    -- handleV :: Process ()
+    -- handleV = putStrLn "Handling 'v_' prefix."
+
+    -- handleF :: Process ()
+    -- handleF = putStrLn "Handling 'f_' prefix."
+
+    handleArgs :: Process ()
+    handleArgs = do
+      say $ "received map: " ++ (show dataMap)
+      send masterPid (Result node (read node :: Double))
 
 randomString :: Int -> IO String
 randomString len = sequence [randomRIO ('a', 'z') | _ <- [1..len]]
@@ -52,9 +79,9 @@ remotable ['remoteCall]
 myRemoteTable :: RemoteTable
 myRemoteTable = Main.__remoteTable initRemoteTable
 
-dispatchJob :: ProcessId -> NodeId  -> String -> Process ()
-dispatchJob masterId nodeId node = do
-  let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall node masterId))
+dispatchJob :: ProcessId -> NodeId  -> String -> (HM.HashMap String Double) -> Process ()
+dispatchJob masterId nodeId node resultMap = do
+  let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall node masterId resultMap))
   _ <- spawn nodeId remoteCallClosure
   liftIO $ putStrLn $ "Sent task to worker: " ++ show nodeId
 
@@ -64,7 +91,7 @@ rotate xs = tail xs ++ [head xs]
 
 master :: Backend -> [NodeId] -> Process ()
 master backend nodes = do
-  let dependencyGraph = [("A", ["B", "C"]), ("B", ["D"]), ("C", ["D"]), ("D", []), ("E", [])] :: DependencyGraph
+  let dependencyGraph = [("A", ["B", "C"]), ("B", ["D"]), ("C", ["D"]), ("10", []), ("20", [])] :: DependencyGraph
   let reversedGraph = reverseDependencyGraph dependencyGraph :: DependencyGraph
   let indegreeCount = [(v, length vs) | (v, vs) <- dependencyGraph] :: [(String, Int)]
   let indegreeZeroNodes = map (\(node, cnt) -> node) $ filter (\(v, indegree) -> indegree == 0) indegreeCount :: [String]
@@ -96,13 +123,14 @@ master backend nodes = do
             else do
               -- say "Assigning jobs (non-empty queue)"
               nodeList <- liftIO $ readMVar nodeListVar :: Process [NodeId]
+              results <- liftIO $ readMVar resultsVar :: Process (HM.HashMap String Double)
               let (job, newQueue) = (head queue, tail queue)
               let worker = head nodeList
               liftIO $ modifyMVar_ queueVar $ \_ -> return newQueue
               liftIO $ modifyMVar_ nodeListVar $ \_ -> return $ rotate nodeList
               -- say $ "new node list: " ++ (show (rotate nodeList))
               -- say $ "updated queue: " ++ (show newQueue)
-              dispatchJob masterPid worker job
+              dispatchJob masterPid worker job results
               liftIO $ threadDelay (1 * (10^6))
               assignJobs
   
@@ -112,7 +140,11 @@ master backend nodes = do
         Result node result <- expect
         visited <- liftIO $ readMVar visitedVar
         visited' <- liftIO $ modifyMVar visitedVar $ \_ -> return (HS.insert node visited, HS.insert node visited)
-        liftIO $ putStrLn $ "Received result: " ++ node ++ " -> " ++ result
+        liftIO $ putStrLn $ "Received result: " ++ node ++ " -> " ++ (show result)
+        results <- liftIO $ readMVar resultsVar
+        results' <- liftIO $ modifyMVar resultsVar $ \_ -> return (HM.insert node result results, HM.insert node result results)
+
+        say $ "Result map: " ++ (show results')
         indegrees <- liftIO $ readMVar indegreeMapVar
         let updatedIndegrees = foldr (updateIndegreeMap node) indegrees (fromMaybe [] $ lookup node reversedGraph)
         -- liftIO $ putStrLn (showDataDependencies reversedGraph)

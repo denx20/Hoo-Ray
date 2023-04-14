@@ -46,7 +46,8 @@ common deps
         parallel,
         time,
         optparse-applicative,
-        distributed-process-async
+        distributed-process-async,
+        hashable
     ghc-options:
         -threaded
     hs-source-dirs: ., Misc, Tests, DependencyGraph, ExtractParensExpr
