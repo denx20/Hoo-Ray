@@ -51,6 +51,10 @@ If UDP multicast is configured properly[^udp], you should see *Hello, World!* pr
     cabal run matmul_test_gen -- -l 50 -m 100 -n 1000 -p 100 -r 10
     ```
 
+- To run python code for visualization under the `Vis` folder, make sure to install all Python libraries in `requirements.txt`. They can be installed using:
+    ```
+    pip install -r requirements.txt
+    ```
 
 ## Current Modules
 
