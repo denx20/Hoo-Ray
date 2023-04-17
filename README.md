@@ -188,4 +188,4 @@ All time readings are rounded to the nearest decimal place since the timestamps 
 
 
 ![results](Presentation/results.png)
-![results](Vis/Hoo-Ray%20performance.png)
+<img src="Vis/Hoo-Ray%20performance.png" width="100%" height="100%">
