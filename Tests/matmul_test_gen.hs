@@ -85,9 +85,11 @@ main = do
     let concurrentProgramText = "import MatMul\nimport Control.Parallel (par, pseq)\nimport Data.Time.Clock\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2*i)) (seeds !! (2*i+1)) range <> "\n") [0..nlines-1]) <> "  let result_list = [" <> intercalate ", " tmps <> "]\n  let result = foldr1 (\\acc x -> x `par` (acc + x)) result_list\n  print result\n"
     Data.Text.IO.writeFile "Tests/matmul_ms_test.hs" concurrentProgramText
     putStrLn "matmul_ms_test.hs has been generated."
-    if test then 
+    if test then do
         let queueProgramText = "import MatMul\nimport Control.Parallel (par, pseq)\nimport Data.Time.Clock\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2*i)) (seeds !! (2*i+1)) range <> "\n") [0..nlines-1]) <> "  print \"Done\"\n"
-        in Data.Text.IO.writeFile "Tests/matmul_test.hs" queueProgramText >> putStrLn "matmul_test.hs has been generated."
+        Data.Text.IO.writeFile "Tests/matmul_coarse_test.hs" queueProgramText >> putStrLn "matmul_coarse_test.hs has been generated."
+        let queueProgramText2 = "import MatMul\nimport Prelude\nimport Data.Time.Clock\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> as !! i <> " = " <> generateMatrixFunctionCall m n range (seeds !! (2*i)) <> "\n  let " <> bs !! i <> " = " <> generateMatrixFunctionCall n p range (seeds !! (2*i+1)) <> "\n  let " <> cs !! i <> " = mmult " <> as !! i <> " " <> bs !! i <> "\n  let " <> tmps !! i <> " = sumMatrix " <> cs !! i <> "\n") [0..nlines-1]) <> "  print \"Done\"\n"
+        Data.Text.IO.writeFile "Tests/matmul_fine_test.hs" queueProgramText2 >> putStrLn "matmul_fine_test.hs has been generated."
         else 
             return ()
     where

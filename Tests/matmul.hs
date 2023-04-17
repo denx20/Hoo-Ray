@@ -6,7 +6,12 @@ module MatMul(
      getFirstElement,
      sumMatrix,
      calculateMatrix,
-     build
+     build,
+     extractMiddle,
+     serializeDouble,
+     deserializeDouble,
+     serializeDoubleList,
+     deserializeDoubleList
 ) where
 
 import Data.List
@@ -41,7 +46,7 @@ matrixBenchmark m n p range seed = do
      let a = generateRandomMatrix m n range seed
      let b = generateRandomMatrix n p range seed 
      let x = mmult a b
-     print (x !! 0 !! 0)
+     print (getFirstElement x)
      end <- getCPUTime
      let diff = fromIntegral (end - start) / (10 ^ 12 :: Double)
      printf "m: %d, n: %d, p: %d. Execution time: %0.6f sec" m n p (diff :: Double)
@@ -77,9 +82,25 @@ extractMiddle :: String -> String
 extractMiddle ('f':'_':rest) = fst $ span (not . isDigit) rest
 extractMiddle _ = error "Invalid input format"
 
+readDouble :: String -> Double
+readDouble s = read s :: Double
+
+serializeDouble :: Double -> String
+serializeDouble x = show x
+
+deserializeDouble :: String -> Double
+deserializeDouble = readDouble
+
+serializeDoubleList :: [[Double]] -> String
+serializeDoubleList xs = intercalate "\n" $ map (intercalate "," . map show) xs
+
+deserializeDoubleList :: String -> [[Double]]
+deserializeDoubleList s = map (map read . splitOn ',') $ lines s
+
+splitOn :: Char -> String -> [String]
+splitOn delimiter = foldr (\c acc -> if c == delimiter then "" : acc else (c : head acc) : tail acc) [""]
+
 main :: IO ()
 main = do
-    -- matrixBenchmark 10000 5000 10000 100 512
-    -- print $ extractMiddle "f_generateRandomMatrix3428343"
+    matrixBenchmark 10000 5000 10000 100 512
     -- let x = build 1 2 3 4 5 :: [Int]
-    print $ calculateMatrix 10.0 1000 100 123.0 512 100
