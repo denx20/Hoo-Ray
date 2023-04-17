@@ -23,11 +23,11 @@ import Data.Char (isDigit)
 import MatMul
 import Text.Read hiding (put, get)
 import System.Exit
-
 import GHC.Generics (Generic)
 import Data.Binary
 import Data.Typeable
 import Text.Printf
+import Data.Time.Clock
 
 instance (Binary k, Binary v, Eq k, Hashable k) => Binary (HM.HashMap k v) where
   put hashMap = do
@@ -137,6 +137,7 @@ sumVtmpValues hm = HM.foldrWithKey accumulateVtmpValues 0 hm
 
 master :: Backend -> String -> [NodeId] -> Process ()
 master backend mode workers = do
+  start <- liftIO $ getCurrentTime
   say "Master started"
   if mode == "coarse"
     then say "Running coarse-grained version"
@@ -210,6 +211,8 @@ master backend mode workers = do
   assignJobsAsync <- spawnLocal assignJobs
   processReply
   terminateAllSlaves backend
+  end <- liftIO $ getCurrentTime
+  say $ "Total time: " ++ (show (diffUTCTime end start))
 
 updateIndegreeMap :: String -> String -> HM.HashMap String Int -> HM.HashMap String Int
 updateIndegreeMap node v indegrees =
