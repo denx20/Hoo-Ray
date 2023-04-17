@@ -54,7 +54,9 @@ data RemoteCall = RemoteCall String ProcessId (HM.HashMap String String) (HM.Has
 instance Binary RemoteCall
 
 
-
+{- 
+Define the remote call used by master to send tasks over to remote workers
+-}
 remoteCall :: RemoteCall -> Process ()
 remoteCall (RemoteCall node masterPid resultMap depGraph) = do
   case getPrefix node of
@@ -65,6 +67,9 @@ remoteCall (RemoteCall node masterPid resultMap depGraph) = do
     getPrefix :: String -> String
     getPrefix str = take 2 str
 
+    {-
+    Handle vertices in the dependency graph, and return the looked-up value from result hashmap
+    -}
     handleV :: Process ()
     handleV = do
       -- say $ "HANDLING node " ++ node
@@ -72,7 +77,10 @@ remoteCall (RemoteCall node masterPid resultMap depGraph) = do
       let result = fromMaybe "" (HM.lookup fname resultMap) :: String
       send masterPid (Result node result)
 
-      
+    {- 
+    Handle function execution. Define the task for the remote worker to perform for each type of operation. 
+    Currently supports the following operations: "calculateMatrix", "generateRandomMatrix", "mmult", and "sumMatrix"
+    -}  
     handleF :: Process ()
     handleF = do
       -- say $ "HANDLING node " ++ node
@@ -105,6 +113,9 @@ remotable ['remoteCall]
 myRemoteTable :: RemoteTable
 myRemoteTable = Main.__remoteTable initRemoteTable
 
+
+{--- Helper functions for master ---}
+
 dispatchJob :: ProcessId -> NodeId  -> String -> (HM.HashMap String String) -> (HM.HashMap String [String]) -> Process ()
 dispatchJob masterId nodeId node resultMap depGraph = do
   let remoteCallClosure = ($(mkClosure 'remoteCall) (RemoteCall node masterId resultMap depGraph))
@@ -134,7 +145,28 @@ sumVtmpValues hm = HM.foldrWithKey accumulateVtmpValues 0 hm
     isPrefixOf :: String -> String -> Bool
     isPrefixOf prefix str = take (length prefix) str == prefix
 
+updateIndegreeMap :: String -> String -> HM.HashMap String Int -> HM.HashMap String Int
+updateIndegreeMap node v indegrees =
+  HM.adjust (\indegree -> indegree - 1) v indegrees
 
+reverseDependencyGraph :: DependencyGraph -> HM.HashMap String [String]
+reverseDependencyGraph g = foldr reverseEdges HM.empty g
+  where
+    reverseEdges (v, vs) revGraph = foldr (\v' acc -> HM.insertWith (++) v' [v] acc) revGraph vs
+
+
+{-
+Code for master. Master performs the following steps: 
+1, read input haskell program and build its dependency graph.
+2, reverse every edge in the dependency graph to get the precendence graph.
+3, find nodes with in-degree zero and add them to the queue.
+4, run assignJobs and processReply. Both processes run continually and simultaneously. 
+   In particular, assignJobs will continually dispatch jobs from the queue to remote workers to be executed 
+   until all nodes in the dependency graph have been calculated; processReply will listen for response from 
+   remote workers and update result hashmap and decrement the in-degree of nodes pointed to by the executed 
+   task upon receiving worker response.
+5, return the output of input program and time elapsed. 
+-}
 master :: Backend -> String -> [NodeId] -> Process ()
 master backend mode workers = do
   start <- liftIO $ getCurrentTime
@@ -213,14 +245,6 @@ master backend mode workers = do
   end <- liftIO $ getCurrentTime
   say $ "Total time: " ++ (show (diffUTCTime end start))
 
-updateIndegreeMap :: String -> String -> HM.HashMap String Int -> HM.HashMap String Int
-updateIndegreeMap node v indegrees =
-  HM.adjust (\indegree -> indegree - 1) v indegrees
-
-reverseDependencyGraph :: DependencyGraph -> HM.HashMap String [String]
-reverseDependencyGraph g = foldr reverseEdges HM.empty g
-  where
-    reverseEdges (v, vs) revGraph = foldr (\v' acc -> HM.insertWith (++) v' [v] acc) revGraph vs
 
 main :: IO ()
 main = do

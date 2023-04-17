@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    # performance data (manually recorded)
+    # Enter performance data here 
     df = pd.DataFrame(
         {
             'Task size': [50, 100, 200],

@@ -31,6 +31,9 @@ type DependencyGraph = [(String, [String])]
 showDataDependencies :: DependencyGraph -> String
 showDataDependencies = unlines . map (\(v, fs) -> "(" ++ show v ++ ", " ++ show fs ++ ")")
 
+{-
+Use pattern binding to extract the data dependencies from the Abstract Syntax Tree (AST) of the input Haskell program
+-}
 extractDataDependencies :: Module SrcSpanInfo -> State Int DependencyGraph
 extractDataDependencies (Module _ _ _ _ decls) = do
     let mainDecls = fromMaybe (error "No main function found") $ findMainFunction decls
@@ -55,6 +58,11 @@ extractDataDependencies (Module _ _ _ _ decls) = do
     collectPatBinds (LetStmt _ (BDecls _ decls)) = decls
     collectPatBinds _ = []
 
+{-
+Analyze AST of a Haskell expression to collect function calls and their arguments. 
+Return a list of tuples, where each tuple is (function_name, [list of function arguments]) and each function name 
+is unique (enforced by appending a unique identifier to the end of function name).
+-}
 collectFunctionCalls :: [String] -> Exp SrcSpanInfo -> State Int [(String, [String])]
 collectFunctionCalls vars expr = do
     result <- collect expr
