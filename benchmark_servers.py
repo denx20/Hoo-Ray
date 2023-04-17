@@ -1,7 +1,5 @@
 # Spawns N servers and tracks their time
 import typer
-import os
-import signal
 import subprocess
 import time
 from enum import Enum
@@ -46,8 +44,7 @@ def main(
     try:
         run(num_slaves, mode)
     except KeyboardInterrupt:
-        print("???")
-        cleanup(process_pids)
+        print("Keyboard interrupt received. Exiting...")
 
 
 if __name__ == "__main__":
