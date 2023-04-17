@@ -9,7 +9,7 @@ import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
 import Control.Concurrent.Async (race_)
-import Control.Distributed.Process.Async 
+-- import Control.Distributed.Process.Async 
 import Control.Monad (forM_, mapM_, forever, replicateM_, replicateM)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
@@ -206,7 +206,8 @@ master backend mode workers = do
                 return $ queue ++ newNodes
             processReply
 
-  assignJobsAsync <- async (AsyncTask assignJobs)
+  -- assignJobsAsync <- async (AsyncTask assignJobs)
+  assignJobsAsync <- spawnLocal assignJobs
   processReply
   terminateAllSlaves backend
 
