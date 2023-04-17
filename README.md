@@ -66,7 +66,9 @@ We also have a Python script using [NetworkX](https://networkx.org) and [PyGraph
 
 Output of `cabal run dependency-graph Tests/pure1.hs > Vis/graph.out` and `python Vis/fetch_graph.py` as an example:
 
-![example graph](Vis/ex_graph.png)
+<p align="center">
+  <img src="Vis/ex_graph.png" />
+</p>
 
 ##### distributed-compute
 
@@ -188,4 +190,6 @@ All time readings are rounded to the nearest decimal place since the timestamps 
 
 
 ![results](Presentation/results.png)
-<img src="Vis/Hoo-Ray%20performance.png" width="100%" height="100%">
+<p align="center">
+  <img src="Vis/Hoo-Ray%20performance.png" />
+</p>
