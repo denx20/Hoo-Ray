@@ -37,6 +37,10 @@ instance BuildList a r => BuildList a (a->r) where
 build :: forall r a. (BuildList a r) => a -> r
 build x = build' [] x
 
+
+{-
+Define matrix operations and helper functions for the large matrix workload evaluation
+-}
 mmult :: Num a => [[a]] -> [[a]] -> [[a]] 
 mmult a b = [ [ sum $ zipWith (*) ar bc | bc <- (transpose b) ] | ar <- a ]
 

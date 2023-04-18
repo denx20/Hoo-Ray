@@ -10,6 +10,17 @@ import System.Random (mkStdGen, randomRs)
 import Options.Applicative
 import Data.Semigroup ((<>))
 
+
+{-
+Define parameters (l, m, n, p, r) that determine the size of evaluation workload.
+The workload consists of the following steps: 
+1, generate a random matrix of size m * n and a random matrix of size n * p, where every entry of 
+   the matrices is randomly chosen from the range [-r, r]. 
+2, multiply these two matrices to get a matrix of size m * p, and calculate the sum of all mp entries. 
+3, Repeat step 1 and 2 for l times and generates l scalar values. 
+4, Add all $l$ scalar values and return the sum. 
+-}
+
 data Options = Options
   { testInput :: Bool
   , nlinesInput :: Int
@@ -79,9 +90,13 @@ main = do
     let bs = getNVarNames nlines "b"
     let cs = getNVarNames nlines "c"
     let tmps = getNVarNames nlines "tmp"
+    
+    -- Create single thread evaluation program and save to Tests/matmul_ss_test.hs
     let programText = "import MatMul\nimport Prelude\nimport Data.Time.Clock\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> as !! i <> " = " <> generateMatrixFunctionCall m n range (seeds !! (2*i)) <> "\n  let " <> bs !! i <> " = " <> generateMatrixFunctionCall n p range (seeds !! (2*i+1)) <> "\n  let " <> cs !! i <> " = mmult " <> as !! i <> " " <> bs !! i <> "\n  let " <> tmps !! i <> " = sumMatrix " <> cs !! i <> "\n") [0..nlines-1]) <> "  let result_list = [" <> intercalate ", " tmps <> "]\n  let result = sum result_list\n  print result\n"
     Data.Text.IO.writeFile "Tests/matmul_ss_test.hs" programText
     putStrLn "matmul_ss_test.hs has been generated."
+
+    -- Create SMP evaluation program and save to Tests/matmul_ms_test.hs
     let concurrentProgramText = "import MatMul\nimport Control.Parallel (par, pseq)\nimport Data.Time.Clock\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2*i)) (seeds !! (2*i+1)) range <> "\n") [0..nlines-1]) <> "  let result_list = [" <> intercalate ", " tmps <> "]\n  let result = foldr1 (\\acc x -> x `par` (acc + x)) result_list\n  print result\n"
     Data.Text.IO.writeFile "Tests/matmul_ms_test.hs" concurrentProgramText
     putStrLn "matmul_ms_test.hs has been generated."
