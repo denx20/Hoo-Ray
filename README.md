@@ -42,9 +42,9 @@ If UDP multicast is configured properly[^udp], you should see *Hello, World!* pr
 
 - Then, `cabal build` to build all the executables to make sure there are no critical errors.
 
-- Finally, `cabal run [program] [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the dependency graph for the file *Tests/pure1.hs*, one would do
+- Finally, `cabal run [program] [args]` builds and runs the specified `program` with `args`. See *Hoo-Ray.cabal* for a current list of programs. For example, to generate the dependency graph for the file *Tests/pure.hs*, one would do
     ```
-    cabal run dependency-graph Tests/pure1.hs
+    cabal run dependency-graph Tests/pure.hs
     ```
     If you wish to use command flags, run `cabal run [program] -- [-f1|--flag1] ...` . For example, to generate matrix multiplication benchmark files, one could do
     ```
@@ -60,11 +60,11 @@ If UDP multicast is configured properly[^udp], you should see *Hello, World!* pr
 
 ##### dependency-graph
 
-Generates a dependency graph (in text) from input file. e.g. `cabal run dependency-graph Tests/pure1.hs`
+Generates a dependency graph (in text) from input file. e.g. `cabal run dependency-graph Tests/pure.hs`
 
-We also have a Python script using [NetworkX](https://networkx.org) and [PyGraphviz](https://pygraphviz.github.io) to visualize the graph. To run it, first install these two packages in your Python environment. Then redirect the output of the above command via e.g. `cabal run dependency-graph Tests/pure1.hs > Vis/graph.out`. Finally, modify the corresponding variables in `Vis/fetch_graph.py` and run `python Vis/fetch_graph.py`.
+We also have a Python script using [NetworkX](https://networkx.org) and [PyGraphviz](https://pygraphviz.github.io) to visualize the graph. To run it, first install these two packages in your Python environment. Then redirect the output of the above command via e.g. `cabal run dependency-graph Tests/pure.hs > Vis/graph.out`. Finally, modify the corresponding variables in `Vis/fetch_graph.py` and run `python Vis/fetch_graph.py`.
 
-Output of `cabal run dependency-graph Tests/pure1.hs > Vis/graph.out` and `python Vis/fetch_graph.py` as an example:
+Output of `cabal run dependency-graph Tests/pure.hs > Vis/graph.out` and `python Vis/fetch_graph.py` as an example:
 
 <p align="center">
   <img src="Vis/ex_graph.png" />

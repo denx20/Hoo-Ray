@@ -50,8 +50,7 @@ common deps
         hashable
     ghc-options:
         -threaded
-    hs-source-dirs: ., Misc, Tests, DependencyGraph, ExtractParensExpr
-    other-modules: SerializedFunction
+    hs-source-dirs: ., Tests, DependencyGraph, ExtractParensExpr
 
 
 common distributed
@@ -80,10 +79,6 @@ executable graph
 executable expression-parser
     import: deps
     main-is: ExtractParensExpr/extract_parens.hs
-
-executable serialize
-    import: deps
-    main-is: Misc/serialize.hs
 
 executable distributed-example
     import: deps, distributed
