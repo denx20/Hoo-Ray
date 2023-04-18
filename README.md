@@ -155,11 +155,13 @@ Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
 
 <!-- ## Experiments -->
 
-All of the following tests are done on a 2019 MacBook Pro with i9-9880H (8 physical cores, 16 logical cores). The tests are generated via
+We choose large random matrix operations for evaluating Hoo-Ray. All of the following tests are done on a 2019 MacBook Pro with i9-9880H (8 physical cores, 16 logical cores). The tests are generated via
 
 ```
 cabal run matmul_test_gen -- -l {number_of_lines} -m 100 -n 1000 -p 100 -r 1 -t
 ```
+
+This will generate a `matmul_ss_test.hs` and a `matmul_ms_test.hs`, which are used for single thread benchmark and shared memory parallel (SMP) benchmark, respectively.
 
 The tests are run via one of
 
@@ -172,7 +174,7 @@ time cabal run matmul_ss_test
 # Distributed parallel
 cabal run queue master 127.0.0.1 8084
 [keyboard interrupt]
-python benchmark_servers.py {num_servers}
+python benchmark_servers.py {num_workers}
 ```
 
 ```
