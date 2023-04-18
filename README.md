@@ -78,7 +78,7 @@ The parameters of this module are in the form `'master <host> <port>' or 'slave 
 
 ##### matmul_test_gen
 
-Generates single-threaded (*Tests/matmul_ss_test.hs*), multi-threaded (*Tests/matmul_ms_test.hs*), and queue.hs compatible (*Tests/matmul_test.hs*) test files (when called with the `-t` flag) with matrix multiplication operations. For a detailed look at the configuration options, run
+Generates single-threaded (*Tests/matmul_ss_test.hs*), multi-threaded (*Tests/matmul_ms_test.hs*), and queue.hs compatible (*Tests/matmul_coarse_test.hs*, *Tests/matmul_fine_test.hs*) test files (when called with the `-t` flag) with matrix multiplication operations. For a detailed look at the configuration options, run
 
 ```
 cabal run matmul_test_gen -- -h
