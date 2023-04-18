@@ -172,8 +172,6 @@ time cabal run matmul_ss_test
 
 ```
 # Distributed parallel
-cabal run queue master 127.0.0.1 8084
-[keyboard interrupt]
 python benchmark_servers.py {num_workers}
 ```
 
