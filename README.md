@@ -2,7 +2,7 @@
 
 Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Haskell. Hoo-Ray uses an abstract syntax tree parser for parsing the data dependencies in the main function of a given Haskell program, and a greedy scheduler for scheduling all computations that have their dependencies met.
 
-This project is done as part of the course [CS 512: Distributed Systems](https://courses.cs.duke.edu/spring23/compsci512/) at Duke University in Spring 2023.
+This project is done as part of the course [CS 512: Distributed Systems](https://courses.cs.duke.edu/spring23/compsci512/) at Duke University in Spring 2023. Our report for can be found under *Report/*.
 
 # Quickstart
 
@@ -137,7 +137,7 @@ While not used in production, this module can be used to identify whether the Ha
 Add your file and its dependencies to `Hoo-Ray.cabal` just like the ones before.
 
 [^udp]: In the particular case of misconfiguration that happened to me while running a Linux machine on Duke's network, I had to execute `sudo vim /etc/resolv.conf` and change the nameserver line to `nameserver 152.3.72.100`. Might not apply to you, but could be of interest to consult.
-[^deps]: If you get an error about Cabal cannot resolve dependencies while installing with `-f distributed`, downgrade your GHC to 8.4.4 with `ghcup tui` and try again.
+[^deps]: If you get an error about Cabal cannot resolve dependencies while installing with `-f distributed`, downgrade your GHC to 8.4.4 with `ghcup tui` and try again. It seems that the distributed-process package has a dependency issue and can only work with GHC 8.x.x. Furthermore, we have tried using `stack` as our resolver, but it keeps falling back to stack with GHC 8.x.x even though the [distributed-process package](https://github.com/haskell-distributed/distributed-process) has some yaml files for GHC 9.x.x with stack. I am unsure why.
 [^localhost_problem]: For some reason, using `localhost` here only occasionally works, but using `127.0.0.1` always works. Any networks person to explain why?
 
 
