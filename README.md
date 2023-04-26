@@ -1,4 +1,8 @@
 # Hoo-Ray
+<p align="left">
+  <a href="https://haskell.org/"><img alt="Made in Haskell" src="https://img.shields.io/badge/Made%20in-Haskell-%235e5086?logo=haskell"></a>
+  <a href="https://github.com/denx20/Hoo-Ray/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/License-MIT-green"></a>
+</p>
 
 Meet Hoo-Ray: Ray-like distributed execution engine for Haskell, written in Haskell. Hoo-Ray uses an abstract syntax tree parser for parsing the data dependencies in the main function of a given Haskell program, and a greedy scheduler for scheduling all computations that have their dependencies met.
 
