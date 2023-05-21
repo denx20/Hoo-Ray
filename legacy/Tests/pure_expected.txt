@@ -1,0 +1,6 @@
+("v_w", ["f_add0"])
+("f_add0", ["v_x","v_y","v_z"])
+("v_k", ["f_multiply1"])
+("f_multiply1", ["v_x","v_z"])
+("v_a", ["f_sub2"])
+("f_sub2", ["v_k","v_y"])

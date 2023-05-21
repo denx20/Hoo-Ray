@@ -1,0 +1,129 @@
+cabal-version:      2.4
+name:               Hoo-Ray
+version:            0.1.0.0
+
+-- A short (one-line) description of the package.
+-- synopsis:
+
+-- A longer description of the package.
+-- description:
+
+-- A URL where users can report bugs.
+-- bug-reports:
+
+-- The license under which the package is released.
+-- license: TBD
+author:
+maintainer:
+
+-- A copyright notice.
+-- copyright:
+-- category:
+extra-source-files:
+    CHANGELOG.md
+    README.md
+    ExtractParensExpr/ExpressionParser.hs
+
+flag distributed
+  default: False
+
+common deps
+    default-language: Haskell2010
+    build-depends:
+        base >= 4.8 && < 5,
+        haskell-src-exts,
+        syb,
+        mtl,
+        HUnit,
+        template-haskell,
+        binary,
+        silently,
+        random,
+        text,
+        containers,
+        async, 
+        unordered-containers,
+        parallel,
+        time,
+        optparse-applicative,
+        distributed-process-async,
+        hashable
+    ghc-options:
+        -threaded
+    hs-source-dirs: ., Tests, DependencyGraph, ExtractParensExpr
+
+
+common distributed
+    if flag(distributed)
+        build-depends:
+            distributed-process,
+            distributed-process-simplelocalnet,
+            distributed-static,
+            network,
+            network-transport-tcp
+        other-modules: DistribUtils
+    else
+        buildable: False
+
+
+
+executable dependency-graph
+    import: deps
+    main-is: DependencyGraph/run_graph.hs
+    other-modules: Graph
+
+executable graph
+    import: deps
+    main-is: DependencyGraph/graph.hs
+
+executable expression-parser
+    import: deps
+    main-is: ExtractParensExpr/extract_parens.hs
+
+executable distributed-example
+    import: deps, distributed
+    main-is: Server/example.hs
+
+executable distributed-ping
+    import: deps, distributed
+    main-is: Server/ping.hs
+
+executable distributed-compute
+    import: deps, distributed
+    main-is: Server/remote-add.hs
+
+executable tests
+    import: deps
+    main-is: Tests/test_dg.hs
+
+executable arithmetic_test_gen
+    import: deps
+    main-is: Tests/arithmetic_test_gen.hs
+
+executable list_test_gen
+    import: deps
+    main-is: Tests/list_test_gen.hs
+
+executable matmul
+    import: deps
+    main-is: Tests/matmul.hs
+
+executable matmul_test_gen
+    import: deps
+    main-is: Tests/matmul_test_gen.hs
+
+executable matmul_ss_test
+    import: deps
+    main-is: Tests/matmul_ss_test.hs
+    other-modules: MatMul
+
+executable matmul_ms_test
+    import: deps
+    main-is: Tests/matmul_ms_test.hs
+    other-modules: MatMul
+
+executable queue
+    import: deps, distributed
+    main-is: DependencyGraph/queue.hs
+    ghc-options: -O2
+    other-modules: Graph, MatMul
