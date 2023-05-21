@@ -242,4 +242,11 @@ packages:
       size: 530
   original:
     hackage: fingertree-0.1.5.0
+- completed:
+    hackage: parallel-3.2.2.0@sha256:c652c3c6e927ba461f40ee374f80e2e1ecfe833e950654d4303a3b15597624b8,1821
+    pantry-tree:
+      sha256: fbb22d782802e76dcb2ba04f51a759f637fbf849b85c77311ff4200612157fc8
+      size: 392
+  original:
+    hackage: parallel-3.2.2.0
 snapshots: []

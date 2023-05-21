@@ -24,12 +24,3 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 .DS_Store
-
-Tests/generated_computation.hs
-Tests/arithmetic_test.hs
-Tests/list_test.hs
-Tests/matmul_ss_test.hs
-Tests/matmul_ms_test.hs
-Tests/matmul_coarse_test.hs
-Tests/matmul_fine_test.hs
-startServers.sh

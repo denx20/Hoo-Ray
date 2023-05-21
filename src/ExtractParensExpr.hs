@@ -1,12 +1,7 @@
 module ExtractParensExpr (extractParensExp) where
 
 import Control.Monad.State
-import Data.Generics
-import Data.List (intercalate)
-import Data.Text (Text, pack)
-import Debug.Trace
 import Language.Haskell.Exts
-import System.Environment (getArgs)
 
 type VarName = String
 
@@ -36,8 +31,8 @@ extractParensExp code = do
       return res_ !! 0
     ParseFailed loc err -> return ("Error at " ++ show loc ++ ": " ++ err) !! 0
 
-main :: IO ()
-main = do
-  let code = "multiply (add (x * y) (y + z)) (y - z)"
-  let res = extractParensExp code
-  putStrLn res
+-- main :: IO ()
+-- main = do
+--   let code = "multiply (add (x * y) (y + z)) (y - z)"
+--   let res = extractParensExp code
+--   putStrLn res

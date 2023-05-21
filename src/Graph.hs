@@ -5,7 +5,6 @@ module Graph (DependencyGraph, showDataDependencies, extractDataDependencies, bu
 import Control.Monad.State
 import Data.List
 import Data.Maybe
-import Debug.Trace
 import Language.Haskell.Exts
 import System.Environment
 

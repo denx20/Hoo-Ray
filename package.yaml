@@ -35,6 +35,7 @@ dependencies:
   - time
   - distributed-process-simplelocalnet
   - distributed-process-async
+  - parallel
 
 ghc-options:
   - -Wall
@@ -62,6 +63,20 @@ executables:
       - HooRay
   matmul_test_gen:
     main: MatMulTestGen.hs
+    source-dirs: test-gen
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - HooRay
+  matmul_ss_test:
+    main: matmul_ss_test.hs
+    source-dirs: test
+    dependencies:
+      - HooRay
+  matmul_ms_test:
+    main: matmul_ms_test.hs
     source-dirs: test
     ghc-options:
       - -threaded

@@ -44,6 +44,7 @@ library
     , haskell-src-exts
     , mtl
     , optparse-applicative
+    , parallel
     , random
     , syb
     , text
@@ -51,8 +52,8 @@ library
     , unordered-containers
   default-language: Haskell2010
 
-executable matmul_test_gen
-  main-is: MatMulTestGen.hs
+executable matmul_ms_test
+  main-is: matmul_ms_test.hs
   other-modules:
       Paths_HooRay
   hs-source-dirs:
@@ -70,6 +71,61 @@ executable matmul_test_gen
     , haskell-src-exts
     , mtl
     , optparse-applicative
+    , parallel
+    , random
+    , syb
+    , text
+    , time
+    , unordered-containers
+  default-language: Haskell2010
+
+executable matmul_ss_test
+  main-is: matmul_ss_test.hs
+  other-modules:
+      Paths_HooRay
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      HooRay
+    , async
+    , base >=4.7 && <5
+    , binary
+    , distributed-process
+    , distributed-process-async
+    , distributed-process-simplelocalnet
+    , hashable
+    , haskell-src-exts
+    , mtl
+    , optparse-applicative
+    , parallel
+    , random
+    , syb
+    , text
+    , time
+    , unordered-containers
+  default-language: Haskell2010
+
+executable matmul_test_gen
+  main-is: MatMulTestGen.hs
+  other-modules:
+      Paths_HooRay
+  hs-source-dirs:
+      test-gen
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HooRay
+    , async
+    , base >=4.7 && <5
+    , binary
+    , distributed-process
+    , distributed-process-async
+    , distributed-process-simplelocalnet
+    , hashable
+    , haskell-src-exts
+    , mtl
+    , optparse-applicative
+    , parallel
     , random
     , syb
     , text
@@ -96,6 +152,7 @@ executable queue
     , haskell-src-exts
     , mtl
     , optparse-applicative
+    , parallel
     , random
     , syb
     , text

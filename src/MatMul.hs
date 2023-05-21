@@ -1,4 +1,8 @@
-{-# OPTIONS -fglasgow-exts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes #-}
+
 module MatMul
   ( generateRandomMatrix,
     matrixBenchmark,
@@ -15,15 +19,10 @@ module MatMul
   )
 where
 
-import Control.Exception
-import Control.Monad (replicateM)
-import Control.Monad.ST (ST, runST)
 import Data.Char (isDigit)
 import Data.List
-import Data.STRef (STRef, modifySTRef', newSTRef, readSTRef)
-import Data.Typeable
 import System.CPUTime
-import System.Random (StdGen, mkStdGen, randomRs)
+import System.Random (mkStdGen, randomRs)
 import Text.Printf
 
 class BuildList a r | r -> a where
@@ -103,9 +102,3 @@ deserializeDoubleList s = map (map read . splitOn ',') $ lines s
 
 splitOn :: Char -> String -> [String]
 splitOn delimiter = foldr (\c acc -> if c == delimiter then "" : acc else (c : head acc) : tail acc) [""]
-
-main :: IO ()
-main = do
-  matrixBenchmark 10000 5000 10000 100 512
-
--- let x = build 1 2 3 4 5 :: [Int]

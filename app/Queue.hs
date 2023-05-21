@@ -2,21 +2,18 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-import Control.Concurrent (threadDelay)
-import Control.Concurrent.Async (race_)
 import Control.Concurrent.MVar
 import Control.Distributed.Process hiding (Message)
 import Control.Distributed.Process.Async
 import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Distributed.Process.Closure
 import Control.Distributed.Process.Node
-import Control.Monad (forM_, forever, mapM_, replicateM, replicateM_)
+import Control.Monad (forM_, replicateM)
 import Data.Binary
-import Data.Char (isDigit)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
 import Data.Hashable (Hashable)
-import Data.List (delete, foldl', intercalate, nub, span, (\\))
+import Data.List (foldl', nub)
 import Data.Maybe
 import Data.Time.Clock
 import Data.Typeable
@@ -25,9 +22,6 @@ import Graph
 import MatMul
 import System.Environment (getArgs)
 import System.Exit
-import System.Random (randomRIO)
-import Text.Printf
-import Text.Read hiding (get, put)
 
 instance (Binary k, Binary v, Eq k, Hashable k) => Binary (HM.HashMap k v) where
   put hashMap = do
@@ -144,8 +138,8 @@ sumVtmpValues hm = HM.foldrWithKey accumulateVtmpValues 0 hm
     isPrefixOf :: String -> String -> Bool
     isPrefixOf prefix str = take (length prefix) str == prefix
 
-updateIndegreeMap :: String -> String -> HM.HashMap String Int -> HM.HashMap String Int
-updateIndegreeMap node v indegrees =
+updateIndegreeMap :: String -> HM.HashMap String Int -> HM.HashMap String Int
+updateIndegreeMap v indegrees =
   HM.adjust (\indegree -> indegree - 1) v indegrees
 
 reverseDependencyGraph :: DependencyGraph -> HM.HashMap String [String]
@@ -181,7 +175,7 @@ master backend mode workers = do
   let depGraph = HM.fromList dependencyGraph :: HM.HashMap String [String]
   let reversedGraph = reverseDependencyGraph dependencyGraph :: HM.HashMap String [String]
   let indegreeCount = indegreeCounts dependencyGraph :: [(String, Int)]
-  let indegreeZeroNodes = map (\(node, cnt) -> node) $ filter (\(v, indegree) -> indegree == 0) indegreeCount :: [String]
+  let indegreeZeroNodes = map (\(node, _) -> node) $ filter (\(_, indegree) -> indegree == 0) indegreeCount :: [String]
   let nodeList = nub $ concatMap (\(n, neighbors) -> n : neighbors) dependencyGraph :: [String]
 
   workerListVar <- liftIO $ newMVar workers
@@ -227,7 +221,7 @@ master backend mode workers = do
 
             -- say $ "Result map: " ++ (show results')
             indegrees <- liftIO $ readMVar indegreeMapVar
-            let updatedIndegrees = foldr (updateIndegreeMap node) indegrees (fromMaybe [] $ HM.lookup node reversedGraph)
+            let updatedIndegrees = foldr (updateIndegreeMap) indegrees (fromMaybe [] $ HM.lookup node reversedGraph)
             liftIO $ modifyMVar_ indegreeMapVar $ \_ -> return updatedIndegrees
             liftIO $
               modifyMVar_ queueVar $ \queue ->
@@ -236,7 +230,7 @@ master backend mode workers = do
                       return $ queue ++ newNodes
             processReply
 
-  assignJobsAsync <- async (AsyncTask assignJobs)
+  _ <- async (AsyncTask assignJobs)
   processReply
   terminateAllSlaves backend
   end <- liftIO $ getCurrentTime

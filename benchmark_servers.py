@@ -11,14 +11,14 @@ app = typer.Typer(
 )
 
 def run(num_slaves, mode):
-    slave_command = lambda port: f"cabal run queue slave 127.0.0.1 {port}"
+    slave_command = lambda port: f"stack exec queue slave 127.0.0.1 {port}"
     for i in range(num_slaves):
         slave = subprocess.Popen(
             (slave_command(i + 8085)).split(" "), stdout=subprocess.DEVNULL
         )
 
     master_command = (
-        "cabal run queue master 127.0.0.1 8084 " + "coarse"
+        "stack exec queue master 127.0.0.1 8084 " + "coarse"
         if mode == Mode.coarse
         else "fine"
     )
