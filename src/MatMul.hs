@@ -7,6 +7,11 @@ module MatMul
   ( generateRandomMatrix,
     matrixBenchmark,
     mmult,
+    madd,
+    msubtract,
+    reluMatrix,
+    softmaxByRow,
+    maskedSoftmaxByRow,
     getFirstElement,
     sumMatrix,
     calculateMatrix,
@@ -24,6 +29,7 @@ import Data.List
 import System.CPUTime
 import System.Random (mkStdGen, randomRs)
 import Text.Printf
+import Numeric.LinearAlgebra.Data (normalize)
 
 class BuildList a r | r -> a where
   build' :: [a] -> a -> r
@@ -42,6 +48,30 @@ Define matrix operations and helper functions for the large matrix workload eval
 -}
 mmult :: Num a => [[a]] -> [[a]] -> [[a]]
 mmult a b = [[sum $ zipWith (*) ar bc | bc <- (transpose b)] | ar <- a]
+
+madd :: Num a => [[a]] -> [[a]] -> [[a]]
+addMatrices a b = zipWith (zipWith (+)) a b
+
+msubtract :: Num a => [[a]] -> [[a]] -> [[a]]
+addMatrices a b = zipWith (zipWith (-)) a b
+
+scaleMatrixByConstant :: Double -> [[Double]] -> [[Double]]
+scaleMatrixByConstant constant matrix = map (map (* constant)) matrix
+
+reluMatrix :: (Num a, Ord a) => [[a]] -> [[a]]
+reluMatrix matrix = map (map relu) matrix
+  where
+    relu x = max 0 x
+
+softmaxByRow :: [[Double]] -> [[Double]]
+softmaxByRow matrix = map softmax matrix
+  where
+    softmax row = normalize $ map exp row
+
+maskedSoftmaxByRow :: [[Double]] -> [[Double]] -> [[Double]]
+maskedSoftmaxByRow matrix mask = zipWith applyMaskedSoftmax matrix mask
+  where
+    applyMaskedSoftmax mat_row mask_row = normalize $ zipWith (*) (map exp mat_row) mask_row
 
 matrixBenchmark :: Int -> Int -> Int -> Double -> Int -> IO ()
 matrixBenchmark m n p range seed = do
