@@ -56,6 +56,9 @@ addMatrices a b = zipWith (zipWith (+)) a b
 msubtract :: Num a => [[a]] -> [[a]] -> [[a]]
 addMatrices a b = zipWith (zipWith (-)) a b
 
+scaleMatrixByConstant :: Double -> [[Double]] -> [[Double]]
+scaleMatrixByConstant constant matrix = map (map (* constant)) matrix
+
 reluMatrix :: (Num a, Ord a) => [[a]] -> [[a]]
 reluMatrix matrix = map (map relu) matrix
   where
