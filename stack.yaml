@@ -4,6 +4,9 @@ resolver: ghc-8.4.4
 
 packages:
   - .
+
+allow-newer: true
+
 extra-deps:
   - haskell-src-exts-1.23.1
   - happy-1.20.1.1

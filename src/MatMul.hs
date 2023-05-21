@@ -29,7 +29,6 @@ import Data.List
 import System.CPUTime
 import System.Random (mkStdGen, randomRs)
 import Text.Printf
-import Numeric.LinearAlgebra.Data (normalize)
 
 class BuildList a r | r -> a where
   build' :: [a] -> a -> r
@@ -46,14 +45,17 @@ build x = build' [] x
 {-
 Define matrix operations and helper functions for the large matrix workload evaluation
 -}
+normalize :: [Double] -> [Double]
+normalize xs = map (/ sum xs) xs
+
 mmult :: Num a => [[a]] -> [[a]] -> [[a]]
 mmult a b = [[sum $ zipWith (*) ar bc | bc <- (transpose b)] | ar <- a]
 
 madd :: Num a => [[a]] -> [[a]] -> [[a]]
-addMatrices a b = zipWith (zipWith (+)) a b
+madd a b = zipWith (zipWith (+)) a b
 
 msubtract :: Num a => [[a]] -> [[a]] -> [[a]]
-addMatrices a b = zipWith (zipWith (-)) a b
+msubtract a b = zipWith (zipWith (-)) a b
 
 scaleMatrixByConstant :: Double -> [[Double]] -> [[Double]]
 scaleMatrixByConstant constant matrix = map (map (* constant)) matrix
