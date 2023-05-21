@@ -25,6 +25,7 @@ import Data.Typeable
 import System.CPUTime
 import System.Random (StdGen, mkStdGen, randomRs)
 import Text.Printf
+import Numeric.LinearAlgebra.Data (normalize)
 
 class BuildList a r | r -> a where
   build' :: [a] -> a -> r
@@ -54,6 +55,16 @@ reluMatrix :: (Num a, Ord a) => [[a]] -> [[a]]
 reluMatrix matrix = map (map relu) matrix
   where
     relu x = max 0 x
+
+softmaxByRow :: [[Double]] -> [[Double]]
+softmaxByRow matrix = map softmax matrix
+  where
+    softmax row = normalize $ map exp row
+
+maskedSoftmaxByRow :: [[Double]] -> [[Double]] -> [[Double]]
+maskedSoftmaxByRow matrix mask = zipWith applyMaskedSoftmax matrix mask
+  where
+    applyMaskedSoftmax mat_row mask_row = normalize $ zipWith (*) (map exp mat_row) mask_row
 
 matrixBenchmark :: Int -> Int -> Int -> Double -> Int -> IO ()
 matrixBenchmark m n p range seed = do
