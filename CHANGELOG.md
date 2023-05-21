@@ -1,11 +1,6 @@
-# Changelog for `HooRay`
+# Revision history for Hoo-Ray
 
-All notable changes to this project will be documented in this file.
+## 0.1.0.0 -- 2023-03-19
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to the
-[Haskell Package Versioning Policy](https://pvp.haskell.org/).
-
-## Unreleased
-
-## 0.1.0.0 - YYYY-MM-DD
+* First version. Released on an unsuspecting world.
+* Added Cabal file.

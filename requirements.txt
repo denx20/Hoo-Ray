@@ -1,0 +1,4 @@
+matplotlib==3.6.2
+networkx==3.0
+pandas==1.5.1
+typer==0.7.0
