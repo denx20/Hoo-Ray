@@ -44,6 +44,17 @@ Define matrix operations and helper functions for the large matrix workload eval
 mmult :: Num a => [[a]] -> [[a]] -> [[a]]
 mmult a b = [[sum $ zipWith (*) ar bc | bc <- (transpose b)] | ar <- a]
 
+madd :: Num a => [[a]] -> [[a]] -> [[a]]
+addMatrices a b = zipWith (zipWith (+)) a b
+
+msubtract :: Num a => [[a]] -> [[a]] -> [[a]]
+addMatrices a b = zipWith (zipWith (-)) a b
+
+reluMatrix :: (Num a, Ord a) => [[a]] -> [[a]]
+reluMatrix matrix = map (map relu) matrix
+  where
+    relu x = max 0 x
+
 matrixBenchmark :: Int -> Int -> Int -> Double -> Int -> IO ()
 matrixBenchmark m n p range seed = do
   start <- getCPUTime
