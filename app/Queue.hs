@@ -77,7 +77,7 @@ remoteCall (RemoteCall node masterPid resultMap depGraph) = do
     -}
     handleF :: Process ()
     handleF = do
-      -- say $ "HANDLING node " ++ node
+      say $ "HANDLING node " ++ node
       let deps = fromMaybe [] (HM.lookup node depGraph)
       case extractMiddle node of
         "calculateMatrix" -> do
