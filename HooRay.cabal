@@ -133,6 +133,33 @@ executable matmul_test_gen
     , unordered-containers
   default-language: Haskell2010
 
+executable mlp_example
+  main-is: mlp_example.hs
+  other-modules:
+      Paths_HooRay
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      HooRay
+    , async
+    , base >=4.7 && <5
+    , binary
+    , distributed-process
+    , distributed-process-async
+    , distributed-process-simplelocalnet
+    , hashable
+    , haskell-src-exts
+    , mtl
+    , optparse-applicative
+    , parallel
+    , random
+    , syb
+    , text
+    , time
+    , unordered-containers
+  default-language: Haskell2010
+
 executable queue
   main-is: Queue.hs
   other-modules:
@@ -140,6 +167,33 @@ executable queue
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HooRay
+    , async
+    , base >=4.7 && <5
+    , binary
+    , distributed-process
+    , distributed-process-async
+    , distributed-process-simplelocalnet
+    , hashable
+    , haskell-src-exts
+    , mtl
+    , optparse-applicative
+    , parallel
+    , random
+    , syb
+    , text
+    , time
+    , unordered-containers
+  default-language: Haskell2010
+
+executable transformer_example
+  main-is: transformer_example.hs
+  other-modules:
+      Paths_HooRay
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       HooRay
     , async

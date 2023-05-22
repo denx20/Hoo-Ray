@@ -84,3 +84,13 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - HooRay
+  mlp_example:
+    main: mlp_example.hs
+    source-dirs: test
+    dependencies:
+      - HooRay
+  transformer_example:
+    main: transformer_example.hs
+    source-dirs: test
+    dependencies:
+      - HooRay

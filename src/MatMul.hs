@@ -9,6 +9,8 @@ module MatMul
     mmult,
     madd,
     msubtract,
+    scaleMatrixByConstant,
+    normalize,
     reluMatrix,
     softmaxByRow,
     maskedSoftmaxByRow,

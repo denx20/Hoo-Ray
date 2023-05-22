@@ -1,6 +1,4 @@
 import MatMul
-import Control.Parallel (par, pseq)
-import Data.Time.Clock
 
 
 upperHalf :: [[a]] -> [[a]]
