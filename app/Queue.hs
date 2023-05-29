@@ -66,10 +66,11 @@ remoteCall (RemoteCall node masterPid resultMap depGraph) = do
     -}
     handleV :: Process ()
     handleV = do
-      -- say $ "HANDLING node " ++ node
+      say $ "HANDLING node " ++ node
       let fname = head (fromMaybe [] $ HM.lookup node depGraph)
       let result = fromMaybe "" (HM.lookup fname resultMap) :: String
       send masterPid (Result node result)
+      say $ "FINISH node " ++ node
 
     {-
     Handle function execution. Define the task for the remote worker to perform for each type of operation.
@@ -84,18 +85,55 @@ remoteCall (RemoteCall node masterPid resultMap depGraph) = do
           let vals = map (\x -> deserializeDouble (fromMaybe "" (HM.lookup x resultMap))) deps
           let result = calculateMatrix (vals !! 0) (vals !! 1) (vals !! 2) (vals !! 3) (vals !! 4) (vals !! 5)
           send masterPid (Result node (serializeDouble result))
+          say $ "FINISH node " ++ node
         "generateRandomMatrix" -> do
           let vals = map (\x -> deserializeDouble (fromMaybe "" (HM.lookup x resultMap))) deps
           let result = generateRandomMatrix (round (vals !! 0)) (round (vals !! 1)) (vals !! 2) (round (vals !! 3))
           send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
         "mmult" -> do
           let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
           let result = mmult (vals !! 0) (vals !! 1)
           send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
         "sumMatrix" -> do
           let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
           let result = sumMatrix (vals !! 0)
           send masterPid (Result node (serializeDouble result))
+          say $ "FINISH node " ++ node
+        "madd" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = madd (vals !! 0) (vals !! 1)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        "reluMatrix" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = reluMatrix (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        "upperHalf" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = upperHalf (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        "lowerHalf" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = lowerHalf (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        "leftHalf" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = leftHalf (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        "rightHalf" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = rightHalf (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        
+
+        
 
     handleArgs :: Process ()
     handleArgs = do
@@ -171,7 +209,7 @@ master backend mode workers = do
       say "No workers available, exiting"
       liftIO $ exitWith (ExitFailure 1)
     else say $ "Master discovered workers: " ++ (show workers)
-  dependencyGraph <- liftIO $ buildGraph (if mode == "coarse" then "test/matmul_coarse_test.hs" else "test/matmul_fine_test.hs")
+  dependencyGraph <- liftIO $ buildGraph (if mode == "coarse" then "test/mlp_example.hs" else "test/matmul_fine_test.hs")
   let depGraph = HM.fromList dependencyGraph :: HM.HashMap String [String]
   let reversedGraph = reverseDependencyGraph dependencyGraph :: HM.HashMap String [String]
   let indegreeCount = indegreeCounts dependencyGraph :: [(String, Int)]
@@ -203,6 +241,7 @@ master backend mode workers = do
             -- say $ "new node list: " ++ (show (rotate nodeList))
             -- say $ "updated queue: " ++ (show newQueue)
             dispatchJob masterPid worker job results depGraph
+            say $ "Current queue: " ++ (show queue)
             assignJobs
 
   let processReply :: Process ()
@@ -219,7 +258,8 @@ master backend mode workers = do
             results <- liftIO $ readMVar resultsVar
             results' <- liftIO $ modifyMVar resultsVar $ \_ -> return (HM.insert node result results, HM.insert node result results)
 
-            -- say $ "Result map: " ++ (show results')
+            say $ "Result map: " ++ (show $ length results')
+            say $ "Node list: " ++ (show $ length nodeList)
             indegrees <- liftIO $ readMVar indegreeMapVar
             let updatedIndegrees = foldr (updateIndegreeMap) indegrees (fromMaybe [] $ HM.lookup node reversedGraph)
             liftIO $ modifyMVar_ indegreeMapVar $ \_ -> return updatedIndegrees

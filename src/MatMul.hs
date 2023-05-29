@@ -13,6 +13,10 @@ module MatMul
     normalize,
     reluMatrix,
     softmaxByRow,
+    upperHalf,
+    lowerHalf,
+    leftHalf,
+    rightHalf,
     maskedSoftmaxByRow,
     getFirstElement,
     sumMatrix,
@@ -76,6 +80,26 @@ maskedSoftmaxByRow :: [[Double]] -> [[Double]] -> [[Double]]
 maskedSoftmaxByRow matrix mask = zipWith applyMaskedSoftmax matrix mask
   where
     applyMaskedSoftmax mat_row mask_row = normalize $ zipWith (*) (map exp mat_row) mask_row
+
+upperHalf :: [[Double]] -> [[Double]]
+upperHalf matrix = take halfRows matrix
+  where
+    halfRows = (length matrix) `div` 2
+
+lowerHalf :: [[Double]] -> [[Double]]
+lowerHalf matrix = drop halfRows matrix
+  where
+    halfRows = (length matrix) `div` 2
+
+leftHalf :: [[Double]] -> [[Double]]
+leftHalf matrix = map (take halfColumns) matrix
+  where
+    halfColumns = (length (head matrix)) `div` 2
+
+rightHalf :: [[Double]] -> [[Double]]
+rightHalf matrix = map (drop halfColumns) matrix
+  where
+    halfColumns = (length (head matrix)) `div` 2
 
 matrixBenchmark :: Int -> Int -> Int -> Double -> Int -> IO ()
 matrixBenchmark m n p range seed = do
