@@ -13,7 +13,7 @@ import Data.Binary
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
 import Data.Hashable (Hashable)
-import Data.List (foldl', nub)
+import Data.List (foldl', nub, transpose)
 import Data.Maybe
 import Data.Time.Clock
 import Data.Typeable
@@ -22,6 +22,7 @@ import Graph
 import MatMul
 import System.Environment (getArgs)
 import System.Exit
+
 
 instance (Binary k, Binary v, Eq k, Hashable k) => Binary (HM.HashMap k v) where
   put hashMap = do
@@ -80,6 +81,7 @@ remoteCall (RemoteCall node masterPid resultMap depGraph) = do
     handleF = do
       say $ "HANDLING node " ++ node
       let deps = fromMaybe [] (HM.lookup node depGraph)
+      say $ "Node function name" ++ (extractMiddle node)
       case extractMiddle node of
         "calculateMatrix" -> do
           let vals = map (\x -> deserializeDouble (fromMaybe "" (HM.lookup x resultMap))) deps
@@ -131,14 +133,26 @@ remoteCall (RemoteCall node masterPid resultMap depGraph) = do
           let result = rightHalf (vals !! 0)
           send masterPid (Result node (serializeDoubleList result))
           say $ "FINISH node " ++ node
-        
-
+        "transpose" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = transpose (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        "softmaxByRow" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = softmaxByRow (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        _ -> do
+          say $ "SUS function name"
         
 
     handleArgs :: Process ()
     handleArgs = do
-      -- say $ "HANDLING node " ++ node
+      say $ "HANDLING node " ++ node
       send masterPid (Result node (serializeDouble (read node :: Double)))
+      say $ "FINISH node " ++ node
+
 
 remotable ['remoteCall]
 
@@ -209,7 +223,7 @@ master backend mode workers = do
       say "No workers available, exiting"
       liftIO $ exitWith (ExitFailure 1)
     else say $ "Master discovered workers: " ++ (show workers)
-  dependencyGraph <- liftIO $ buildGraph (if mode == "coarse" then "test/mlp_example.hs" else "test/matmul_fine_test.hs")
+  dependencyGraph <- liftIO $ buildGraph (if mode == "coarse" then "test/transformer_example.hs" else "test/matmul_fine_test.hs")
   let depGraph = HM.fromList dependencyGraph :: HM.HashMap String [String]
   let reversedGraph = reverseDependencyGraph dependencyGraph :: HM.HashMap String [String]
   let indegreeCount = indegreeCounts dependencyGraph :: [(String, Int)]
@@ -217,6 +231,7 @@ master backend mode workers = do
   let nodeList = nub $ concatMap (\(n, neighbors) -> n : neighbors) dependencyGraph :: [String]
 
   workerListVar <- liftIO $ newMVar workers
+  --availableWorkerSetVar <- liftIO $ newMVar $ HS.fromList workers
   queueVar <- liftIO $ newMVar indegreeZeroNodes
   indegreeMapVar <- liftIO $ newMVar $ HM.fromList indegreeCount
   resultsVar <- liftIO $ newMVar HM.empty
@@ -241,6 +256,7 @@ master backend mode workers = do
             -- say $ "new node list: " ++ (show (rotate nodeList))
             -- say $ "updated queue: " ++ (show newQueue)
             dispatchJob masterPid worker job results depGraph
+            say $ "Dispatched " ++ job ++ " to worker"
             say $ "Current queue: " ++ (show queue)
             assignJobs
 
