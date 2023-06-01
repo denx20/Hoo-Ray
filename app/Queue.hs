@@ -13,7 +13,7 @@ import Data.Binary
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
 import Data.Hashable (Hashable)
-import Data.List (foldl', nub)
+import Data.List (foldl', nub, transpose)
 import Data.Maybe
 import Data.Time.Clock
 import Data.Typeable
@@ -22,6 +22,7 @@ import Graph
 import MatMul
 import System.Environment (getArgs)
 import System.Exit
+
 
 instance (Binary k, Binary v, Eq k, Hashable k) => Binary (HM.HashMap k v) where
   put hashMap = do
@@ -77,6 +78,7 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
     handleF = do
       say $ "HANDLING node " ++ node
       let deps = fromMaybe [] (HM.lookup node depGraph)
+      say $ "Node function name" ++ (extractMiddle node)
       case extractMiddle node of
         "calculateMatrix" -> do
           let vals = map (\x -> deserializeDouble (fromMaybe "" (HM.lookup x resultMap))) deps
@@ -128,11 +130,24 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
           let result = rightHalf (vals !! 0)
           send masterPid (Result nodeId node (serializeDoubleList result))
           say $ "FINISH node " ++ node
+        "transpose" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = transpose (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        "softmaxByRow" -> do
+          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
+          let result = softmaxByRow (vals !! 0)
+          send masterPid (Result node (serializeDoubleList result))
+          say $ "FINISH node " ++ node
+        _ -> do
+          say $ "SUS function name"
         
+
     handleArgs :: Process ()
     handleArgs = do
       -- say $ "HANDLING node " ++ node
-      send masterPid (Result nodeId node (serializeDouble (read node :: Double)))
+      send masterPid (Result node (serializeDouble (read node :: Double)))
 
 remotable ['remoteCall]
 
@@ -198,14 +213,14 @@ master backend filepath workers = do
       say "No workers available, exiting"
       liftIO $ exitWith (ExitFailure 1)
     else say $ "Master discovered workers: " ++ (show workers)
-  dependencyGraph <- liftIO $ buildGraph filepath
+  dependencyGraph <- liftIO $ buildGraph (if mode == "coarse" then "test/mlp_example.hs" else "test/matmul_fine_test.hs")
   let depGraph = HM.fromList dependencyGraph :: HM.HashMap String [String]
   let reversedGraph = reverseDependencyGraph dependencyGraph :: HM.HashMap String [String]
   let indegreeCount = indegreeCounts dependencyGraph :: [(String, Int)]
   let indegreeZeroNodes = map (\(node, _) -> node) $ filter (\(_, indegree) -> indegree == 0) indegreeCount :: [String]
   let nodeList = nub $ concatMap (\(n, neighbors) -> n : neighbors) dependencyGraph :: [String]
 
-  -- workerListVar <- liftIO $ newMVar workers
+  workerListVar <- liftIO $ newMVar workers
   queueVar <- liftIO $ newMVar indegreeZeroNodes
   indegreeMapVar <- liftIO $ newMVar $ HM.fromList indegreeCount
   resultsVar <- liftIO $ newMVar HM.empty
@@ -224,35 +239,16 @@ master backend filepath workers = do
             say $ "Final result: " ++ (show (sumVtmpValues results))
             return ()
           else do
-            if (HS.null idle_workers)
-              then do
-                -- say "No idle workers, waiting..."
-                -- idle_worker <- expect
-                -- liftIO $ modifyMVar_ idleWorkerVar $ \_ -> return $ HS.insert idle_worker idle_workers
-                assignJobs
-              else do
-                let (job, newQueue) = (head queue, tail queue)
-                let worker = head $ HS.toList idle_workers 
-                -- let worker = HS.elemAt 0 idle_workers
-                liftIO $ modifyMVar_ queueVar $ \_ -> return newQueue
-                -- liftIO $ modifyMVar_ workerListVar $ \_ -> return $ rotate workerList
-                liftIO $ modifyMVar_ idleWorkerVar $ \_ -> return $ HS.delete worker idle_workers
-                -- say $ "new node list: " ++ (show (rotate nodeList))
-                -- say $ "updated queue: " ++ (show newQueue)
-                dispatchJob masterPid worker job results depGraph
-                -- say $ "Current queue: " ++ (show queue)
-                assignJobs
-              
-            -- workerList <- liftIO $ readMVar workerListVar :: Process [NodeId]
-            -- let (job, newQueue) = (head queue, tail queue)
-            -- let worker = head workerList
-            -- liftIO $ modifyMVar_ queueVar $ \_ -> return newQueue
-            -- liftIO $ modifyMVar_ workerListVar $ \_ -> return $ rotate workerList
-            -- -- say $ "new node list: " ++ (show (rotate nodeList))
-            -- -- say $ "updated queue: " ++ (show newQueue)
-            -- dispatchJob masterPid worker job results depGraph
-            -- say $ "Current queue: " ++ (show queue)
-            -- assignJobs
+            workerList <- liftIO $ readMVar workerListVar :: Process [NodeId]
+            let (job, newQueue) = (head queue, tail queue)
+            let worker = head workerList
+            liftIO $ modifyMVar_ queueVar $ \_ -> return newQueue
+            liftIO $ modifyMVar_ workerListVar $ \_ -> return $ rotate workerList
+            -- say $ "new node list: " ++ (show (rotate nodeList))
+            -- say $ "updated queue: " ++ (show newQueue)
+            dispatchJob masterPid worker job results depGraph
+            say $ "Current queue: " ++ (show queue)
+            assignJobs
 
   let processReply :: Process ()
       processReply = do
