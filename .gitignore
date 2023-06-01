@@ -24,3 +24,5 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 .DS_Store
+.vscode/
+```
