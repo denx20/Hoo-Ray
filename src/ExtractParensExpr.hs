@@ -1,7 +1,7 @@
 module ExtractParensExpr (extractParensExp) where
 
 import Control.Monad.State
-import Language.Haskell.Exts
+import Language.Haskell.Exts hiding (loc, var)
 
 type VarName = String
 
@@ -27,9 +27,9 @@ extractParensExp code = do
       let (ast', (_, exprInfo)) = runState (extractParens ast) (0, [])
       let exprInfo' = reverse exprInfo
       let res = mapM (\(var, expr) -> ["let " ++ var ++ " = " ++ prettyPrint expr]) exprInfo'
-      let res_ = unlines (res !! 0) ++ "let res = " ++ prettyPrint ast'
-      return res_ !! 0
-    ParseFailed loc err -> return ("Error at " ++ show loc ++ ": " ++ err) !! 0
+      let res_ = unlines (head res) ++ "let res = " ++ prettyPrint ast'
+      return $ head res_
+    ParseFailed loc err -> return $ head ("Error at " ++ show loc ++ ": " ++ err)
 
 -- main :: IO ()
 -- main = do

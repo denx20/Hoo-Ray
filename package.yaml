@@ -20,22 +20,22 @@ extra-source-files:
 description: Please see the README on GitHub at <https://github.com/githubuser/HooRay#readme>
 
 dependencies:
-  - base >= 4.7 && < 5
-  - syb
-  - mtl
+  - base
   - haskell-src-exts
-  - text
+  - mtl
   - random
-  - optparse-applicative
-  - async
-  - distributed-process
-  - binary
-  - unordered-containers
-  - hashable
-  - time
-  - distributed-process-simplelocalnet
-  - distributed-process-async
   - parallel
+  - optparse-applicative
+  - text
+  # - syb
+  # - async
+  # - distributed-process
+  # - binary
+  # - unordered-containers
+  # - hashable
+  # - time
+  # - distributed-process-simplelocalnet
+  # - distributed-process-async
 
 ghc-options:
   - -Wall
@@ -52,15 +52,15 @@ library:
   source-dirs: src
 
 executables:
-  queue:
-    main: Queue.hs
-    source-dirs: app
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - HooRay
+  # queue:
+  #   main: Queue.hs
+  #   source-dirs: app
+  #   ghc-options:
+  #     - -threaded
+  #     - -rtsopts
+  #     - -with-rtsopts=-N
+  #   dependencies:
+  #     - HooRay
   matmul_test_gen:
     main: MatMulTestGen.hs
     source-dirs: test-gen

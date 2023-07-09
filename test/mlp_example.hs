@@ -37,7 +37,7 @@ main = do
   let b3 = generateRandomMatrix 10 1 1.0 230330
 
   {- Parallalizable forward pass -}
-  --let h0 = x
+  -- let h0 = x
   let h01 = upperHalf x
   let h02 = lowerHalf x
   let w11 = leftHalf w1
@@ -69,15 +69,14 @@ main = do
   let predsum = sumMatrix ypred
   print predsum
 
-  {- Natural way of forward pass -}
-  {-
-  let h0_natural = x
-  let tmp1_natural = madd (mmult w1 h0_natural) b1
-  let h1_natural = reluMatrix tmp1_natural
-  let tmp2_natural = madd (mmult w2 h1_natural) b2
-  let h2_natural = reluMatrix tmp2_natural
-  let y_pred_natural = madd (mmult w3 h2_natural) b3  
+{- Natural way of forward pass -}
+{-
+let h0_natural = x
+let tmp1_natural = madd (mmult w1 h0_natural) b1
+let h1_natural = reluMatrix tmp1_natural
+let tmp2_natural = madd (mmult w2 h1_natural) b2
+let h2_natural = reluMatrix tmp2_natural
+let y_pred_natural = madd (mmult w3 h2_natural) b3
 
-  print (sumMatrix (msubtract y_pred y_pred_natural)) -- y_pred and y_pred_other should be the same
-  -}
-
+print (sumMatrix (msubtract y_pred y_pred_natural)) -- y_pred and y_pred_other should be the same
+-}

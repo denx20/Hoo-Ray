@@ -1,6 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 
 module MatMul
@@ -21,7 +19,6 @@ module MatMul
     getFirstElement,
     sumMatrix,
     calculateMatrix,
-    build,
     extractMiddle,
     serializeDouble,
     deserializeDouble,
@@ -31,22 +28,10 @@ module MatMul
 where
 
 import Data.Char (isDigit)
-import Data.List
-import System.CPUTime
+import Data.List (intercalate, transpose)
+import System.CPUTime (getCPUTime)
 import System.Random (mkStdGen, randomRs)
-import Text.Printf
-
-class BuildList a r | r -> a where
-  build' :: [a] -> a -> r
-
-instance BuildList a [a] where
-  build' l x = reverse $ x : l
-
-instance BuildList a r => BuildList a (a -> r) where
-  build' l x y = build' (x : l) y
-
-build :: forall r a. (BuildList a r) => a -> r
-build x = build' [] x
+import Text.Printf (printf)
 
 {-
 Define matrix operations and helper functions for the large matrix workload evaluation
@@ -54,52 +39,52 @@ Define matrix operations and helper functions for the large matrix workload eval
 normalize :: [Double] -> [Double]
 normalize xs = map (/ sum xs) xs
 
-mmult :: Num a => [[a]] -> [[a]] -> [[a]]
-mmult a b = [[sum $ zipWith (*) ar bc | bc <- (transpose b)] | ar <- a]
+mmult :: (Num a) => [[a]] -> [[a]] -> [[a]]
+mmult a b = [[sum $ zipWith (*) ar bc | bc <- transpose b] | ar <- a]
 
-madd :: Num a => [[a]] -> [[a]] -> [[a]]
-madd a b = zipWith (zipWith (+)) a b
+madd :: (Num a) => [[a]] -> [[a]] -> [[a]]
+madd = zipWith (zipWith (+))
 
-msubtract :: Num a => [[a]] -> [[a]] -> [[a]]
-msubtract a b = zipWith (zipWith (-)) a b
+msubtract :: (Num a) => [[a]] -> [[a]] -> [[a]]
+msubtract = zipWith (zipWith (-))
 
 scaleMatrixByConstant :: Double -> [[Double]] -> [[Double]]
-scaleMatrixByConstant constant matrix = map (map (* constant)) matrix
+scaleMatrixByConstant constant = map (map (* constant))
 
 reluMatrix :: (Num a, Ord a) => [[a]] -> [[a]]
-reluMatrix matrix = map (map relu) matrix
+reluMatrix = map (map relu)
   where
-    relu x = max 0 x
+    relu = max 0
 
 softmaxByRow :: [[Double]] -> [[Double]]
-softmaxByRow matrix = map softmax matrix
+softmaxByRow = map softmax
   where
     softmax row = normalize $ map exp row
 
 maskedSoftmaxByRow :: [[Double]] -> [[Double]] -> [[Double]]
-maskedSoftmaxByRow matrix mask = zipWith applyMaskedSoftmax matrix mask
+maskedSoftmaxByRow = zipWith applyMaskedSoftmax
   where
     applyMaskedSoftmax mat_row mask_row = normalize $ zipWith (*) (map exp mat_row) mask_row
 
 upperHalf :: [[Double]] -> [[Double]]
 upperHalf matrix = take halfRows matrix
   where
-    halfRows = (length matrix) `div` 2
+    halfRows = length matrix `div` 2
 
 lowerHalf :: [[Double]] -> [[Double]]
 lowerHalf matrix = drop halfRows matrix
   where
-    halfRows = (length matrix) `div` 2
+    halfRows = length matrix `div` 2
 
 leftHalf :: [[Double]] -> [[Double]]
 leftHalf matrix = map (take halfColumns) matrix
   where
-    halfColumns = (length (head matrix)) `div` 2
+    halfColumns = length (head matrix) `div` 2
 
 rightHalf :: [[Double]] -> [[Double]]
 rightHalf matrix = map (drop halfColumns) matrix
   where
-    halfColumns = (length (head matrix)) `div` 2
+    halfColumns = length (head matrix) `div` 2
 
 matrixBenchmark :: Int -> Int -> Int -> Double -> Int -> IO ()
 matrixBenchmark m n p range seed = do
@@ -109,13 +94,13 @@ matrixBenchmark m n p range seed = do
   let x = mmult a b
   print (getFirstElement x)
   end <- getCPUTime
-  let diff = fromIntegral (end - start) / (10 ^ 12 :: Double)
+  let diff = fromIntegral (end - start) / (10 ^ (12 :: Integer) :: Double)
   printf "m: %d, n: %d, p: %d. Execution time: %0.6f sec" m n p (diff :: Double)
 
 generateRandomMatrix :: Int -> Int -> Double -> Int -> [[Double]]
 generateRandomMatrix m n range seed =
   let gen = mkStdGen seed
-      randomsList = randomRs (- range, range) gen
+      randomsList = randomRs (-range, range) gen
    in chunksOf n $ take (m * n) randomsList
 
 chunksOf :: Int -> [a] -> [[a]]
@@ -140,14 +125,14 @@ calculateMatrix m n p seedA seedB range = sumMatrix (mmult a b)
     b = generateRandomMatrix n' p' range seedB'
 
 extractMiddle :: String -> String
-extractMiddle ('f' : '_' : rest) = fst $ span (not . isDigit) rest
+extractMiddle ('f' : '_' : rest) = takeWhile (not . isDigit) rest
 extractMiddle _ = error "Invalid input format"
 
 readDouble :: String -> Double
 readDouble s = read s :: Double
 
 serializeDouble :: Double -> String
-serializeDouble x = show x
+serializeDouble = show
 
 deserializeDouble :: String -> Double
 deserializeDouble = readDouble

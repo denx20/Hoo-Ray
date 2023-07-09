@@ -1,5 +1,4 @@
 import MatMul
-import Control.Parallel (par, pseq)
 
 main :: IO ()
 main = do
