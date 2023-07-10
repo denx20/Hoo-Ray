@@ -89,12 +89,12 @@ packages:
   original:
     hackage: network-simple-0.4.5
 - completed:
-    hackage: network-3.1.4.0@sha256:d50e055f45bd09a8238200ec64ffa0f17492c32cdb5807487894388ce1c2f839,5186
+    hackage: network-3.0.0.0@sha256:5b5427680052c1f5ffc94d50385406101e412b0f33d8bb921adc39d096984476,4045
     pantry-tree:
-      sha256: b8307960df0995ffc0d06c4c536d7b2fb2da4af8ff1e99575ca058b68ea8c5f8
-      size: 3977
+      sha256: 462d8f197323964d0a6efee0d0a1c533ba3b2925509e14a7d758d2e32a22c6ed
+      size: 3121
   original:
-    hackage: network-3.1.4.0
+    hackage: network-3.0.0.0
 - completed:
     hackage: network-bsd-2.8.1.0@sha256:cd945ea08818281e4a8fa6f0a0640a1502aad3748546a3c197e071772452a9bd,3738
     pantry-tree:
@@ -151,4 +151,95 @@ packages:
       size: 326
   original:
     hackage: data-array-byte-0.1.0.1
+- completed:
+    hackage: data-accessor-0.2.3.1@sha256:a80a740bd0956537f3d25228afd26bd48e45f9bf75990bb6a7720bcda17cb4a1,4862
+    pantry-tree:
+      sha256: 85e213be939ae0e87fa73dcb3b67da397298991be73b95cc6f1d641d2d40ebdd
+      size: 1139
+  original:
+    hackage: data-accessor-0.2.3.1
+- completed:
+    hackage: network-multicast-0.3.2@sha256:521547635a6afae408ec25193b3e429082dc0442668dac7ad5cea76ccee39750,979
+    pantry-tree:
+      sha256: 3a7b55c4427288622cb2b21a14dd5b4da2a7b3bcad50384db9b0435a0aaacc65
+      size: 393
+  original:
+    hackage: network-multicast-0.3.2
+- completed:
+    hackage: network-transport-0.5.6@sha256:22e38b85c9f9f2c722e6acd2ed98e7bf17c7a5e927cb86788f95d476f158874c,4001
+    pantry-tree:
+      sha256: b32efe13abf9ad27a8d3f13ddfb9548f667fb78211f633f048ce2658099a7033
+      size: 419
+  original:
+    hackage: network-transport-0.5.6
+- completed:
+    hackage: network-transport-tcp-0.8.1@sha256:775e0811943e44c0a3c40a7c0343c51cf92d520e5e9aee1c6958dca4e9d1fab5,3373
+    pantry-tree:
+      sha256: deef7c0c34faee15363f575e8367509eb5577d45bb868e2573e39c69aa1349b3
+      size: 651
+  original:
+    hackage: network-transport-tcp-0.8.1
+- completed:
+    hackage: distributed-static-0.3.9@sha256:f5e781867eddec660cb3b39805c849e3f096b7da245d43a07d8529e3c92b3a27,2297
+    pantry-tree:
+      sha256: 5c5ba6d3b628da7e67209f9472346cc2bbf41ecc9bd308f3e135a2163e188d65
+      size: 286
+  original:
+    hackage: distributed-static-0.3.9
+- completed:
+    hackage: rank1dynamic-0.4.1@sha256:dec98e959467f07f9adb5b19426799c3461a53e4f3e86a652efe28a07e6cfd71,1767
+    pantry-tree:
+      sha256: 999ec5d0d0771287d1087032b2fbc6c1dabe32c1006be1775a6d546e6fecba1d
+      size: 391
+  original:
+    hackage: rank1dynamic-0.4.1
+- completed:
+    hackage: syb-0.7.2.3@sha256:d71f6747016466b0766491eae36be842ba98ba25e2aec26eaedbeea965c0586a,3889
+    pantry-tree:
+      sha256: af03d30da1011ca3ebcbecdb7e7c6ad4cabc8af0fc03017c74575c241677d6d3
+      size: 3400
+  original:
+    hackage: syb-0.7.2.3
+- completed:
+    hackage: uuid-1.3.15@sha256:a3d79c5a5e58035e7dc5a08c5910c44a6719aaa38697b249e3f67aaac884411a,2642
+    pantry-tree:
+      sha256: df9a5e6225eaff4a10a8537f6b16f7fd68d417ffe231d60cfa92f8e571653297
+      size: 739
+  original:
+    hackage: uuid-1.3.15
+- completed:
+    hackage: cryptohash-md5-0.11.101.0@sha256:8d8172dfca073406d6d50a122a8a8caa53a0ea8f3827232a40b3fd7c4de85484,3104
+    pantry-tree:
+      sha256: 98ff9e99c89f231ae2d17d0edd47fedb4d7e683090fb93d4f78d39e430145b6a
+      size: 571
+  original:
+    hackage: cryptohash-md5-0.11.101.0
+- completed:
+    hackage: cryptohash-sha1-0.11.101.0@sha256:25be9e5bb979c1b96d7695d9cbb6a40ec345025e7a100b2d71d499812c2e89ec,3094
+    pantry-tree:
+      sha256: 46e82365fccb4be546010902a7a8e7e54dd975e6cb422ecb8502b5d65b9fd14a
+      size: 577
+  original:
+    hackage: cryptohash-sha1-0.11.101.0
+- completed:
+    hackage: entropy-0.4.1.10@sha256:82bd7b600fb8df540dd292ed91dc781f4523eecef3bb588b14787b4851722cb1,2952
+    pantry-tree:
+      sha256: e2fe70a408adfd9160a0c6cb5ef759eb3ac06f64d3a62681d73f3bb74e8188de
+      size: 682
+  original:
+    hackage: entropy-0.4.1.10
+- completed:
+    hackage: network-info-0.2.1@sha256:2798c2e4cc2c32108bd4b05efa921ce6f054ebc381c5e465c9bd74c7d538af17,1567
+    pantry-tree:
+      sha256: 46a5c6401b97f4e143e5c63521d1c4d880ed081e2ab2293f0508c4cb6a1b07e6
+      size: 847
+  original:
+    hackage: network-info-0.2.1
+- completed:
+    hackage: uuid-types-1.0.5@sha256:e4662609522f093b86c5ae86aa9781afc69338cf102d42e5b5c196c320d95621,2636
+    pantry-tree:
+      sha256: e5715eb2196f941fe2297c99cab36b602a781fc5ee3c103932cdfe5b6ce28e75
+      size: 480
+  original:
+    hackage: uuid-types-1.0.5
 snapshots: []

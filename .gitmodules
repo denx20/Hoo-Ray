@@ -1,0 +1,6 @@
+[submodule "distributed-process"]
+	path = distributed-process
+	url = https://github.com/haskell-distributed/distributed-process
+[submodule "distributed-process-simplelocalnet"]
+	path = distributed-process-simplelocalnet
+	url = https://github.com/haskell-distributed/distributed-process-simplelocalnet

@@ -31,13 +31,14 @@ dependencies:
   - network-simple
   - bytestring
   - async
+  - distributed-process
+  # - distributed-process-simplelocalnet
   # - syb
   # - async
   # - binary
   # - unordered-containers
   # - hashable
   # - time
-  # - distributed-process-simplelocalnet
   # - distributed-process-async
 
 ghc-options:
