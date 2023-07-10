@@ -81,4 +81,74 @@ packages:
       size: 1183
   original:
     hackage: colour-2.3.6
+- completed:
+    hackage: network-simple-0.4.5@sha256:22ff42a4e6b25a0dba498c558ff82e04e2cdcac7932082b620fea406fa32de8d,1320
+    pantry-tree:
+      sha256: ad6f783059f3406ce9f29cbe9eb1c2f35fc011f7607152c3c1d9ea829722e838
+      size: 564
+  original:
+    hackage: network-simple-0.4.5
+- completed:
+    hackage: network-3.1.4.0@sha256:d50e055f45bd09a8238200ec64ffa0f17492c32cdb5807487894388ce1c2f839,5186
+    pantry-tree:
+      sha256: b8307960df0995ffc0d06c4c536d7b2fb2da4af8ff1e99575ca058b68ea8c5f8
+      size: 3977
+  original:
+    hackage: network-3.1.4.0
+- completed:
+    hackage: network-bsd-2.8.1.0@sha256:cd945ea08818281e4a8fa6f0a0640a1502aad3748546a3c197e071772452a9bd,3738
+    pantry-tree:
+      sha256: f8f2a2d68923368c37ceedb8935fafe39ae6dc1ec9e89e7ddad09088c2b3b053
+      size: 264
+  original:
+    hackage: network-bsd-2.8.1.0
+- completed:
+    hackage: safe-exceptions-0.1.7.4@sha256:f4aad0eca90044cb1eba53b84f75d5fa142d25d695117730bf31178d409c4fe0,1398
+    pantry-tree:
+      sha256: 3531373b84e300871a9b1a5d94e4fef72bc3ac765ce12a4f732f8c197c512bbb
+      size: 511
+  original:
+    hackage: safe-exceptions-0.1.7.4
+- completed:
+    hackage: socks-0.6.1@sha256:ac190808eea704672df18f702e8f2ad0b7a4d0af528e95ee55ea6ee0be672e2a,1258
+    pantry-tree:
+      sha256: 53d29c06c42e737ae99660e077c7c4b286f1272b3394ad7f74163867a5b3b8fa
+      size: 692
+  original:
+    hackage: socks-0.6.1
+- completed:
+    hackage: basement-0.0.16@sha256:e9458cbe67f396fb81900ec65852a582a2b7febd09b17a85adee576c8d7cc321,5404
+    pantry-tree:
+      sha256: 868afcc62edd1c3af6405ee0a5d1bcc0cdc0919114e26299c7fd63706c750973
+      size: 5799
+  original:
+    hackage: basement-0.0.16
+- completed:
+    hackage: cereal-0.5.8.3@sha256:87a227c7b510217ea059db3dd59d9665edd8f0d1d3d8de39458e371a1d9402fb,2767
+    pantry-tree:
+      sha256: 2d570ae699908d131b63fe176115809982f86ec4589cdbf42848aa2ca79209cb
+      size: 641
+  original:
+    hackage: cereal-0.5.8.3
+- completed:
+    hackage: async-2.2.4@sha256:46367dc0c8326dcbeb7b93f200b567491c2f6029bccf822b8bb26ee660397e08,3112
+    pantry-tree:
+      sha256: c7475b437d4a2c50b57148192fb2f859a81bb7970cf28c4af2e57105c610ff72
+      size: 501
+  original:
+    hackage: async-2.2.4
+- completed:
+    hackage: hashable-1.4.2.0@sha256:585792335d5541dba78fa8dfcb291a89cd5812a281825ff7a44afa296ab5d58a,4520
+    pantry-tree:
+      sha256: 792a6cab3f15c5db29d759c8ca735d0be5f4c94f363329652f8b9780009d0829
+      size: 1248
+  original:
+    hackage: hashable-1.4.2.0
+- completed:
+    hackage: data-array-byte-0.1.0.1@sha256:2ef1bd3511e82ba56f7f23cd793dd2da84338a1e7c2cbea5b151417afe3baada,1989
+    pantry-tree:
+      sha256: 3e2e40055eef1b63c43900296d2584d2911a24ad7016d3d73bd9c73150287212
+      size: 326
+  original:
+    hackage: data-array-byte-0.1.0.1
 snapshots: []

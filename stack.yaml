@@ -19,4 +19,13 @@ extra-deps:
   - ansi-terminal-0.11.5
   - ansi-terminal-types-0.11.5
   - colour-2.3.6
-
+  - network-simple-0.4.5
+  - network-3.1.4.0
+  - network-bsd-2.8.1.0
+  - safe-exceptions-0.1.7.4
+  - socks-0.6.1
+  - basement-0.0.16
+  - cereal-0.5.8.3
+  - async-2.2.4
+  - hashable-1.4.2.0
+  - data-array-byte-0.1.0.1

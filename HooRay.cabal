@@ -34,9 +34,13 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base
+      async
+    , base
+    , binary
+    , bytestring
     , haskell-src-exts
     , mtl
+    , network-simple
     , optparse-applicative
     , parallel
     , random
@@ -52,9 +56,37 @@ executable build_graph
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       HooRay
+    , async
     , base
+    , binary
+    , bytestring
     , haskell-src-exts
     , mtl
+    , network-simple
+    , optparse-applicative
+    , parallel
+    , random
+    , text
+  default-language: Haskell2010
+
+executable master
+  main-is: master.hs
+  other-modules:
+      ExtractParensExpr
+      Graph
+      MatMul
+      Paths_HooRay
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      async
+    , base
+    , binary
+    , bytestring
+    , haskell-src-exts
+    , mtl
+    , network-simple
     , optparse-applicative
     , parallel
     , random
@@ -70,9 +102,13 @@ executable matmul_ms_test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       HooRay
+    , async
     , base
+    , binary
+    , bytestring
     , haskell-src-exts
     , mtl
+    , network-simple
     , optparse-applicative
     , parallel
     , random
@@ -88,9 +124,13 @@ executable matmul_ss_test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       HooRay
+    , async
     , base
+    , binary
+    , bytestring
     , haskell-src-exts
     , mtl
+    , network-simple
     , optparse-applicative
     , parallel
     , random
@@ -105,10 +145,13 @@ executable matmul_test_gen
       test-gen
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HooRay
+      async
     , base
+    , binary
+    , bytestring
     , haskell-src-exts
     , mtl
+    , network-simple
     , optparse-applicative
     , parallel
     , random
@@ -124,9 +167,13 @@ executable mlp_example
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       HooRay
+    , async
     , base
+    , binary
+    , bytestring
     , haskell-src-exts
     , mtl
+    , network-simple
     , optparse-applicative
     , parallel
     , random
@@ -142,9 +189,37 @@ executable transformer_example
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       HooRay
+    , async
     , base
+    , binary
+    , bytestring
     , haskell-src-exts
     , mtl
+    , network-simple
+    , optparse-applicative
+    , parallel
+    , random
+    , text
+  default-language: Haskell2010
+
+executable worker
+  main-is: worker.hs
+  other-modules:
+      ExtractParensExpr
+      Graph
+      MatMul
+      Paths_HooRay
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      async
+    , base
+    , binary
+    , bytestring
+    , haskell-src-exts
+    , mtl
+    , network-simple
     , optparse-applicative
     , parallel
     , random
