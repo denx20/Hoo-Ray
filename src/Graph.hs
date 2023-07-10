@@ -3,7 +3,13 @@
 module Graph (DependencyGraph, showDataDependencies, extractDataDependencies, buildGraph) where
 
 import Control.Exception (IOException, try)
-import Control.Monad.Except hiding (guard)
+import Control.Monad.Except
+  ( ExceptT (ExceptT),
+    MonadError (throwError),
+    MonadIO (liftIO),
+    forM,
+    runExceptT,
+  )
 import Control.Monad.State
   ( MonadState (get, put),
     State,

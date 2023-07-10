@@ -1,7 +1,16 @@
 module ExtractParensExpr (extractParensExp) where
 
-import Control.Monad.State
-import Language.Haskell.Exts hiding (loc, var)
+import Control.Monad.State (MonadState (state), State, runState)
+import Language.Haskell.Exts
+  ( Exp (App, Paren, Var),
+    Name (Ident),
+    ParseResult (ParseFailed, ParseOk),
+    QName (UnQual),
+    SrcSpanInfo,
+    noSrcSpan,
+    parseExp,
+    prettyPrint,
+  )
 
 type VarName = String
 
