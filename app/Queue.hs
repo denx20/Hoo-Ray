@@ -1,6 +1,8 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ExistentialQuantification #-}
 
 import Control.Concurrent.MVar
   ( MVar,
@@ -43,7 +45,6 @@ import GHC.Generics (Generic)
 import Graph (DependencyGraph, buildGraph)
 import MatMul
   ( calculateMatrix,
-    deserializeDouble,
     deserializeDoubleList,
     extractMiddle,
     generateRandomMatrix,
@@ -53,7 +54,6 @@ import MatMul
     mmult,
     reluMatrix,
     rightHalf,
-    serializeDouble,
     serializeDoubleList,
     softmaxByRow,
     sumMatrix,
@@ -76,6 +76,114 @@ data RemoteCall = RemoteCall NodeId String ProcessId (HM.HashMap String String) 
 
 instance Binary RemoteCall
 
+class Serializable a where
+  serialize :: a -> String
+  deserialize :: String -> a
+
+instance Serializable Int where
+  serialize = show
+  deserialize = round . read
+
+instance Serializable Double where
+  serialize = show
+  deserialize = read
+
+instance Serializable [[Double]] where
+  serialize = serializeDoubleList
+  deserialize = deserializeDoubleList
+
+class ProcessStep a where
+  action :: a -> [String] -> IO String
+
+data CalculateMatrix = CalculateMatrix
+instance ProcessStep CalculateMatrix where
+    action CalculateMatrix args = 
+          let [d1, d2, d3, d4, d5, d6] = map deserialize args :: [Double]
+          in return $ show $ calculateMatrix d1 d2 d3 d4 d5 d6
+
+data GenerateRandomMatrix = GenerateRandomMatrix
+instance ProcessStep GenerateRandomMatrix where
+    action GenerateRandomMatrix args = 
+          let [d1, d2, d3, d4] = map deserialize args :: [Int]
+          in return $ serialize $ generateRandomMatrix d1 d2 (fromIntegral d3) d4
+
+data Mmult = Mmult
+instance ProcessStep Mmult where
+    action Mmult args = 
+          let [d1, d2] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ mmult d1 d2
+
+data SumMatrix = SumMatrix
+instance ProcessStep SumMatrix where
+    action SumMatrix args = 
+          let [d1] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ sumMatrix d1
+
+data Madd = Madd
+instance ProcessStep Madd where
+    action Madd args = 
+          let [d1, d2] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ madd d1 d2
+
+data ReluMatrix = ReluMatrix
+instance ProcessStep ReluMatrix where
+    action ReluMatrix args = 
+          let [d1] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ reluMatrix d1
+
+data UpperHalf = UpperHalf
+instance ProcessStep UpperHalf where
+    action UpperHalf args = 
+          let [d1] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ upperHalf d1
+
+data LowerHalf = LowerHalf
+instance ProcessStep LowerHalf where
+    action LowerHalf args = 
+          let [d1] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ lowerHalf d1
+
+data LeftHalf = LeftHalf
+instance ProcessStep LeftHalf where
+    action LeftHalf args = 
+          let [d1] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ leftHalf d1
+
+data RightHalf = RightHalf
+instance ProcessStep RightHalf where
+    action RightHalf args = 
+          let [d1] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ rightHalf d1
+
+data Transpose = Transpose
+instance ProcessStep Transpose where
+    action Transpose args = 
+          let [d1] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ transpose d1
+
+data SoftmaxByRow = SoftmaxByRow
+instance ProcessStep SoftmaxByRow where
+    action SoftmaxByRow args = 
+          let [d1] = map deserialize args :: [[[Double]]]
+          in return $ serialize $ softmaxByRow d1
+
+data SomeProcessStep = forall a. ProcessStep a => SomeProcessStep a
+
+processSteps :: HM.HashMap String SomeProcessStep
+processSteps = HM.fromList [
+  ("calculateMatrix", SomeProcessStep CalculateMatrix), 
+  ("generateRandomMatrix", SomeProcessStep GenerateRandomMatrix), 
+  ("mmult", SomeProcessStep Mmult), 
+  ("sumMatrix", SomeProcessStep SumMatrix), 
+  ("madd", SomeProcessStep Madd), 
+  ("reluMatrix", SomeProcessStep ReluMatrix), 
+  ("upperHalf", SomeProcessStep UpperHalf), 
+  ("lowerHalf", SomeProcessStep LowerHalf), 
+  ("leftHalf", SomeProcessStep LeftHalf), 
+  ("rightHalf", SomeProcessStep RightHalf), 
+  ("transpose", SomeProcessStep Transpose), 
+  ("softmaxByRow", SomeProcessStep SoftmaxByRow)]
+
 {-
 Define the remote call used by master to send tasks over to remote workers
 -}
@@ -91,10 +199,10 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
 
     handleV :: Process ()
     handleV = do
-      say $ "HANDLING node " ++ node
+      -- say $ "HANDLING node " ++ node
       let fname = head (fromMaybe [] $ HM.lookup node depGraph)
       let result = fromMaybe "" (HM.lookup fname resultMap) :: String
-      send masterPid (Result nodeId node result) -- MODIFIED
+      send masterPid (Result nodeId node result)
 
     {-
     Handle function execution. Define the task for the remote worker to perform for each type of operation.
@@ -102,64 +210,19 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
     -}
     handleF :: Process ()
     handleF = do
-      say $ "HANDLING node " ++ node
+      -- say $ "HANDLING function node " ++ node
       let deps = fromMaybe [] (HM.lookup node depGraph)
-      case extractMiddle node of
-        "calculateMatrix" -> do
-          let vals = map (\x -> deserializeDouble (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = calculateMatrix (vals !! 0) (vals !! 1) (vals !! 2) (vals !! 3) (vals !! 4) (vals !! 5)
-          send masterPid (Result nodeId node (serializeDouble result))
-        "generateRandomMatrix" -> do
-          let vals = map (\x -> deserializeDouble (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = generateRandomMatrix (round (vals !! 0)) (round (vals !! 1)) (vals !! 2) (round (vals !! 3))
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "mmult" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = mmult (vals !! 0) (vals !! 1)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "sumMatrix" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = sumMatrix (vals !! 0)
-          send masterPid (Result nodeId node (serializeDouble result))
-        "madd" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = madd (vals !! 0) (vals !! 1)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "reluMatrix" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = reluMatrix (vals !! 0)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "upperHalf" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = upperHalf (vals !! 0)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "lowerHalf" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = lowerHalf (vals !! 0)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "leftHalf" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = leftHalf (vals !! 0)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "rightHalf" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = rightHalf (vals !! 0)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "transpose" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = transpose (vals !! 0)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        "softmaxByRow" -> do
-          let vals = map (\x -> deserializeDoubleList (fromMaybe "" (HM.lookup x resultMap))) deps
-          let result = softmaxByRow (vals !! 0)
-          send masterPid (Result nodeId node (serializeDoubleList result))
-        _ -> do
-          error "Unknown function name"
+      let vals = map (\x -> fromMaybe "" (HM.lookup x resultMap)) deps
+      case HM.lookup (extractMiddle node) processSteps of 
+        Just (SomeProcessStep step) -> do
+            result <- liftIO $ action step vals
+            send masterPid (Result nodeId node result)
+        Nothing -> error "Unknown function name"
 
     handleArgs :: Process ()
     handleArgs = do
-      say $ "HANDLING node " ++ node
-      send masterPid (Result nodeId node (serializeDouble (read node :: Double)))
+      -- say $ "HANDLING node " ++ node
+      send masterPid (Result nodeId node (serialize (read node :: Double)))
 
 remotable ['remoteCall]
 
@@ -239,8 +302,7 @@ runMaster backend filepath workers = do
   resultsVar <- newMVarProcess HM.empty
   idleWorkersVar <- newMVarProcess workers
   pendingNodesVar <- newMVarProcess $ HS.fromList nodeList
-
-  say $ "Initial queue: " ++ show indegreeZeroNodes
+  finalResultVar <- newMVarProcess Nothing
 
   master <- getSelfPid
   let process :: Process ()
@@ -257,7 +319,11 @@ runMaster backend filepath workers = do
             updatedIndegrees <- readMVarProcess indegreeCounMVar
             pendingNodes <- readMVarProcess pendingNodesVar
             modifyMVarProcess queueVar (++ getIndegreeZeroNodes updatedIndegrees pendingNodes queue)
-          Nothing ->  return ()
+            updatedResults <- readMVarProcess resultsVar  
+            when (length updatedResults == length nodeList) $ do 
+              modifyMVarProcess finalResultVar (const (Just result))
+              return ()
+          Nothing -> return ()
         when (not (null idleWorkers) && not (null queue)) $ do
           let worker = head idleWorkers
           let job = head queue  
@@ -265,18 +331,12 @@ runMaster backend filepath workers = do
           modifyMVarProcess queueVar tail
           modifyMVarProcess pendingNodesVar (HS.delete job)
           dispatchJob master worker job results depGraph
-        updatedResults <- readMVarProcess resultsVar
-        if length updatedResults == length nodeList
-          then do
-            case HM.lookup (last nodeList) updatedResults of
-              Nothing -> do
-                say "Error: final result not found"
-                return ()
-              Just finalValue -> do
-                say $ "Final result: " ++ finalValue
-                say "Returning from process"
-                return ()
-          else process
+        finalResult <- readMVarProcess finalResultVar
+        case finalResult of
+          Just result -> do
+            say $ "Final result: " ++ result
+            return ()
+          Nothing -> process
   process
   end <- liftIO getCurrentTime
   say $ "Total time: " ++ show (diffUTCTime end start)

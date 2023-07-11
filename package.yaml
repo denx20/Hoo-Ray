@@ -59,6 +59,15 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - Hoo-Ray
+  build_graph:
+    main: build_graph.hs
+    source-dirs: test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - Hoo-Ray
   matmul_test_gen:
     main: MatMulTestGen.hs
     source-dirs: test-gen
@@ -80,15 +89,6 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - Hoo-Ray
-  matmul_coarse_test:
-    main: matmul_coarse_test.hs
-    source-dirs: test
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - Hoo-Ray
   mlp_example:
     main: mlp_example.hs
     source-dirs: test
@@ -97,14 +97,5 @@ executables:
   transformer_example:
     main: transformer_example.hs
     source-dirs: test
-    dependencies:
-      - Hoo-Ray
-  build_graph:
-    main: build_graph.hs
-    source-dirs: test
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
     dependencies:
       - Hoo-Ray

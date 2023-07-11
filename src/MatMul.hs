@@ -19,11 +19,8 @@ module MatMul
     sumMatrix,
     calculateMatrix,
     extractMiddle,
-    serializeDouble,
-    deserializeDouble,
     serializeDoubleList,
     deserializeDoubleList,
-    dequeue,
   )
 where
 
@@ -128,15 +125,6 @@ extractMiddle :: String -> String
 extractMiddle ('f' : '_' : rest) = takeWhile (not . isDigit) rest
 extractMiddle _ = error "Invalid input format"
 
-readDouble :: String -> Double
-readDouble s = read s :: Double
-
-serializeDouble :: Double -> String
-serializeDouble = show
-
-deserializeDouble :: String -> Double
-deserializeDouble = readDouble
-
 serializeDoubleList :: [[Double]] -> String
 serializeDoubleList xs = intercalate "\n" $ map (intercalate "," . map show) xs
 
@@ -145,6 +133,3 @@ deserializeDoubleList s = map (map read . splitOn ',') $ lines s
 
 splitOn :: Char -> String -> [String]
 splitOn delimiter = foldr (\c acc -> if c == delimiter then "" : acc else (c : head acc) : tail acc) [""]
-
-dequeue :: [a] -> (a, [a])
-dequeue xs = (head xs, tail xs)

@@ -75,31 +75,6 @@ executable build_graph
     , unordered-containers
   default-language: Haskell2010
 
-executable matmul_coarse_test
-  main-is: matmul_coarse_test.hs
-  other-modules:
-      Paths_Hoo_Ray
-  hs-source-dirs:
-      test
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      Hoo-Ray
-    , base
-    , binary
-    , distributed-process
-    , distributed-process-async
-    , distributed-process-simplelocalnet
-    , hashable
-    , haskell-src-exts
-    , mtl
-    , optparse-applicative
-    , parallel
-    , random
-    , text
-    , time
-    , unordered-containers
-  default-language: Haskell2010
-
 executable matmul_ms_test
   main-is: matmul_ms_test.hs
   other-modules:
