@@ -9,7 +9,7 @@
 --     readMVar,
 --   )
 
-import Control.Concurrent (threadDelay)
+import Control.Concurrent (MVar, threadDelay)
 import Control.Concurrent.STM
   ( TVar,
     atomically,
@@ -23,6 +23,7 @@ import Control.Distributed.Process
     ProcessId,
     RemoteTable,
     expect,
+    expectTimeout,
     getSelfPid,
     liftIO,
     say,
@@ -45,7 +46,7 @@ import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Distributed.Process.Closure (mkClosure, remotable)
 import Control.Distributed.Process.Internal.CQueue ()
 import Control.Distributed.Process.Node (initRemoteTable)
-import Control.Monad (unless, when)
+-- import Control.Monad (unless, when)
 import Data.Binary (Binary (get, put))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
@@ -81,12 +82,12 @@ instance (Binary k, Binary v, Hashable k) => Binary (HM.HashMap k v) where
   put = put . HM.toList
   get = HM.fromList <$> get
 
-data Message = Result NodeId String String -- MODIFIED
+data Message = Result NodeId String String
   deriving (Typeable, Generic)
 
 instance Binary Message
 
-data RemoteCall = RemoteCall NodeId String ProcessId (HM.HashMap String String) (HM.HashMap String [String]) -- MODIFIED
+data RemoteCall = RemoteCall NodeId String ProcessId (HM.HashMap String String) (HM.HashMap String [String])
   deriving (Show, Typeable, Generic)
 
 instance Binary RemoteCall
@@ -183,13 +184,10 @@ myRemoteTable = Main.__remoteTable initRemoteTable
 
 dispatchJob :: ProcessId -> NodeId -> String -> HM.HashMap String String -> HM.HashMap String [String] -> Process ()
 dispatchJob masterId nodeId node resultMap depGraph = do
-  let remoteCallClosure = $(mkClosure 'remoteCall) (RemoteCall nodeId node masterId resultMap depGraph) -- MODIFIED
+  let remoteCallClosure = $(mkClosure 'remoteCall) (RemoteCall nodeId node masterId resultMap depGraph)
   _ <- spawn nodeId remoteCallClosure
   -- liftIO $ putStrLn $ "Sent task to worker: " ++ show nodeId ++ " for node: " ++ node
   return ()
-
-unlessM :: (Monad m) => m Bool -> m () -> m ()
-unlessM mb m = mb >>= flip unless m
 
 allNodes :: HM.HashMap String [String] -> [String]
 allNodes graph = HS.toList . HS.fromList $ HM.keys graph ++ concat (HM.elems graph)
@@ -235,6 +233,49 @@ getIndegreeZeroNodes indegreeCount results queue =
   let cands = HM.keys $ HM.filter (== 0) indegreeCount
    in filter (\x -> not (x `HM.member` results || x `elem` queue)) cands
 
+assignJobs :: TVar [String] -> TVar (HM.HashMap String String) -> TVar [NodeId] -> TVar (HM.HashMap String Int) -> [String] -> HM.HashMap String [String] -> HM.HashMap String [String] -> ProcessId -> Process ()
+assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar nodeList reversedDepGraph depGraph master = do
+  queue <- readTVarProcess queueVar
+  results <- readTVarProcess resultsVar
+  idleWorkers <- readTVarProcess idleWorkersVar
+  if null queue && length results == length nodeList
+    then do
+      say $ "Final result: " ++ show (sumVtmpValues results)
+      say "Returning from assignJobs"
+      return ()
+    else
+      if not (null idleWorkers) && not (null queue)
+        then do
+          let worker = head idleWorkers
+          let job = head queue
+          modifyTVarProcess idleWorkersVar tail
+          modifyTVarProcess queueVar tail
+          dispatchJob master worker job results depGraph
+          -- liftIO $ threadDelay 1000
+          processReplies queueVar resultsVar idleWorkersVar indegreeCountVar nodeList reversedDepGraph depGraph master
+        else do
+          -- liftIO $ threadDelay 1000
+          processReplies queueVar resultsVar idleWorkersVar indegreeCountVar nodeList reversedDepGraph depGraph master
+
+processReplies :: TVar [String] -> TVar (HM.HashMap String String) -> TVar [NodeId] -> TVar (HM.HashMap String Int) -> [String] -> HM.HashMap String [String] -> HM.HashMap String [String] -> ProcessId -> Process ()
+processReplies queueVar resultsVar idleWorkersVar indegreeCountVar nodeList reversedDepGraph depGraph master = do
+  queue <- readTVarProcess queueVar
+  maybeResult <- expectTimeout 0
+  case maybeResult of
+    Nothing -> do
+      return ()
+    Just (Result worker node result) -> do
+      -- say $ "Received result: " ++ show result ++ " from worker: " ++ show worker ++ " for node: " ++ node
+      -- say $ "PROGRESS" ++ show (length results) ++ " " ++ show (length nodeList)
+      modifyTVarProcess idleWorkersVar (++ [worker])
+      modifyTVarProcess resultsVar (HM.insert node result)
+      modifyTVarProcess indegreeCountVar (updateCounts (fromMaybe [] $ HM.lookup node reversedDepGraph))
+      updatedIndegrees <- readTVarProcess indegreeCountVar
+      updatedResults <- readTVarProcess resultsVar
+      -- say $ "RESULTS" ++ show updatedResults ++ " " ++ show nodeList
+      modifyTVarProcess queueVar (++ getIndegreeZeroNodes updatedIndegrees updatedResults queue)
+  assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar nodeList reversedDepGraph depGraph master
+
 {-
 Code for master. Master performs the following steps:
 1, read input haskell program and build its dependency graph.
@@ -271,59 +312,9 @@ runMaster backend filepath workers = do
   say $ "Initial queue: " ++ show indegreeZeroNodes
 
   master <- getSelfPid
-
-  let assignJobs :: Process ()
-      assignJobs = do
-        queue <- readTVarProcess queueVar
-        results <- readTVarProcess resultsVar
-        idleWorkers <- readTVarProcess idleWorkersVar
-        if (null queue && length results == length nodeList)
-          then do
-            say $ "Returning from assignJobs"
-            return ()
-          else
-            if (not (null idleWorkers) && not (null queue))
-              then do
-                let worker = head idleWorkers
-                let job = head queue
-                modifyTVarProcess idleWorkersVar tail
-                modifyTVarProcess queueVar tail
-                dispatchJob master worker job results depGraph
-                liftIO $ threadDelay 1000
-                assignJobs
-              else do
-                liftIO $ threadDelay 1000
-                assignJobs
-
-  let processReplies :: Process ()
-      processReplies = do
-        results <- readTVarProcess resultsVar
-        queue <- readTVarProcess queueVar
-        if length results == length nodeList
-          then do
-            say $ "Final result: " ++ show (sumVtmpValues results)
-            say $ "Returning from processReplies"
-            return ()
-          else do
-            Result worker node result <- expect
-            -- say $ "Received result: " ++ show result ++ " from worker: " ++ show worker ++ " for node: " ++ node
-            -- say $ "PROGRESS" ++ show (length results) ++ " " ++ show (length nodeList)
-            modifyTVarProcess idleWorkersVar (++ [worker])
-            modifyTVarProcess resultsVar (HM.insert node result)
-            modifyTVarProcess indegreeCountVar (updateCounts (fromMaybe [] $ HM.lookup node reversedDepGraph))
-            updatedIndegrees <- readTVarProcess indegreeCountVar
-            updatedResults <- readTVarProcess resultsVar
-            -- say $ "RESULTS" ++ show updatedResults ++ " " ++ show nodeList
-            modifyTVarProcess queueVar (++ getIndegreeZeroNodes updatedIndegrees updatedResults queue)
-            processReplies
-
-  -- task <- async (AsyncTask assignJobs)
-  -- processReplies
-  pid1 <- spawnLocal assignJobs
-  processReplies
+  processReplies queueVar resultsVar idleWorkersVar indegreeCountVar nodeList reversedDepGraph depGraph master
   end <- liftIO getCurrentTime
   say $ "Total time: " ++ show (diffUTCTime end start)
-  -- cancel task
   terminateAllSlaves backend
 
 main :: IO ()
