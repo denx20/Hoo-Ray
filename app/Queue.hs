@@ -2,39 +2,23 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
--- import Control.Concurrent.MVar
---   ( MVar,
---     modifyMVar_,
---     newMVar,
---     readMVar,
---   )
-
-import Control.Concurrent (MVar, threadDelay)
-import Control.Concurrent.STM
-  ( TVar,
-    atomically,
-    modifyTVar',
-    newTVarIO,
-    readTVarIO,
+import Control.Concurrent.MVar
+  ( MVar,
+    modifyMVar_,
+    newMVar,
+    readMVar,
   )
 import Control.Distributed.Process
   ( NodeId,
     Process,
     ProcessId,
     RemoteTable,
-    expect,
     expectTimeout,
     getSelfPid,
     liftIO,
     say,
     send,
     spawn,
-    spawnLocal,
-  )
-import Control.Distributed.Process.Async
-  ( AsyncTask (AsyncTask),
-    async,
-    cancel,
   )
 import Control.Distributed.Process.Backend.SimpleLocalnet
   ( Backend,
@@ -46,7 +30,7 @@ import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Distributed.Process.Closure (mkClosure, remotable)
 import Control.Distributed.Process.Internal.CQueue ()
 import Control.Distributed.Process.Node (initRemoteTable)
--- import Control.Monad (unless, when)
+import Control.Monad (when)
 import Data.Binary (Binary (get, put))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
@@ -197,14 +181,14 @@ reverseDependencyGraph = foldr reverseEdges HM.empty
   where
     reverseEdges (v, vs) revGraph = foldr (\v' acc -> HM.insertWith (++) v' [v] acc) revGraph vs
 
-newTVarProcess :: a -> Process (TVar a)
-newTVarProcess = liftIO . newTVarIO
+newMVarProcess :: a -> Process (MVar a)
+newMVarProcess = liftIO . newMVar
 
-readTVarProcess :: TVar a -> Process a
-readTVarProcess mvar = liftIO $ readTVarIO mvar
+readMVarProcess :: MVar a -> Process a
+readMVarProcess mvar = liftIO $ readMVar mvar
 
-modifyTVarProcess :: TVar a -> (a -> a) -> Process ()
-modifyTVarProcess mvar func = liftIO . atomically $ modifyTVar' mvar func
+modifyMVarProcess :: MVar a -> (a -> a) -> Process ()
+modifyMVarProcess mvar func = liftIO $ modifyMVar_ mvar (return . func)
 
 getIndegreeCount :: HM.HashMap String [String] -> HM.HashMap String Int
 getIndegreeCount graph = foldl' updateOutdegree initCounts $ HM.toList graph
@@ -221,51 +205,6 @@ getIndegreeZeroNodes :: HM.HashMap String Int -> HS.HashSet String -> [String] -
 getIndegreeZeroNodes indegreeCount pendingNodes queue =
   let cands = HM.keys $ HM.filter (== 0) indegreeCount
    in filter (\x -> notElem x queue && HS.member x pendingNodes) cands
-
-assignJobs :: TVar [String] -> TVar (HM.HashMap String String) -> TVar [NodeId] -> TVar (HM.HashMap String Int) -> TVar (HS.HashSet String) -> [String] -> HM.HashMap String [String] -> HM.HashMap String [String] -> ProcessId -> Process ()
-assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master = do
-  queue <- readTVarProcess queueVar
-  results <- readTVarProcess resultsVar
-  idleWorkers <- readTVarProcess idleWorkersVar
-  if not (null idleWorkers) && not (null queue)
-    then do
-      let worker = head idleWorkers
-      let job = head queue
-      modifyTVarProcess idleWorkersVar tail
-      modifyTVarProcess queueVar tail
-      modifyTVarProcess pendingNodesVar (HS.delete job)
-      dispatchJob master worker job results depGraph
-      processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
-    else do
-      processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
-
-processReplies :: TVar [String] -> TVar (HM.HashMap String String) -> TVar [NodeId] -> TVar (HM.HashMap String Int) -> TVar (HS.HashSet String) -> [String] -> HM.HashMap String [String] -> HM.HashMap String [String] -> ProcessId -> Process ()
-processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master = do
-  maybeResult <- expectTimeout 0
-  case maybeResult of
-    Nothing -> do
-      assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
-    Just (Result worker node result) -> do
-      modifyTVarProcess idleWorkersVar (++ [worker])
-      modifyTVarProcess resultsVar (HM.insert node result)
-      modifyTVarProcess indegreeCountVar (updateCounts (fromMaybe [] $ HM.lookup node reversedDepGraph))
-      updatedIndegrees <- readTVarProcess indegreeCountVar
-      queue <- readTVarProcess queueVar
-      pendingNodes <- readTVarProcess pendingNodesVar
-      modifyTVarProcess queueVar (++ getIndegreeZeroNodes updatedIndegrees pendingNodes queue)
-      updatedResults <- readTVarProcess resultsVar
-      if length updatedResults == length nodeList
-        then do
-          case HM.lookup node updatedResults of
-            Nothing -> do
-              say "Error: final result not found"
-              return ()
-            Just finalValue -> do
-              say $ "Final result: " ++ finalValue
-              say "Returning from processReplies"
-              return ()
-        else do
-          assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
 
 {-
 Code for master. Master performs the following steps:
@@ -295,16 +234,50 @@ runMaster backend filepath workers = do
   let indegreeZeroNodes = HM.keys . HM.filter (== 0) $ indegreeCount :: [String]
   let nodeList = allNodes depGraph :: [String]
 
-  queueVar <- newTVarProcess indegreeZeroNodes
-  indegreeCountVar <- newTVarProcess indegreeCount
-  resultsVar <- newTVarProcess HM.empty
-  idleWorkersVar <- newTVarProcess workers
-  pendingNodesVar <- newTVarProcess $ HS.fromList nodeList
+  queueVar <- newMVarProcess indegreeZeroNodes
+  indegreeCounMVar <- newMVarProcess indegreeCount
+  resultsVar <- newMVarProcess HM.empty
+  idleWorkersVar <- newMVarProcess workers
+  pendingNodesVar <- newMVarProcess $ HS.fromList nodeList
 
   say $ "Initial queue: " ++ show indegreeZeroNodes
 
   master <- getSelfPid
-  processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
+  let process :: Process ()
+      process = do
+        queue <- readMVarProcess queueVar
+        results <- readMVarProcess resultsVar
+        idleWorkers <- readMVarProcess idleWorkersVar
+        maybeResult <- expectTimeout 0
+        case maybeResult of
+          Just (Result worker node result) -> do
+            modifyMVarProcess idleWorkersVar (++ [worker])
+            modifyMVarProcess resultsVar (HM.insert node result)
+            modifyMVarProcess indegreeCounMVar (updateCounts (fromMaybe [] $ HM.lookup node reversedDepGraph))
+            updatedIndegrees <- readMVarProcess indegreeCounMVar
+            pendingNodes <- readMVarProcess pendingNodesVar
+            modifyMVarProcess queueVar (++ getIndegreeZeroNodes updatedIndegrees pendingNodes queue)
+          Nothing ->  return ()
+        when (not (null idleWorkers) && not (null queue)) $ do
+          let worker = head idleWorkers
+          let job = head queue  
+          modifyMVarProcess idleWorkersVar tail
+          modifyMVarProcess queueVar tail
+          modifyMVarProcess pendingNodesVar (HS.delete job)
+          dispatchJob master worker job results depGraph
+        updatedResults <- readMVarProcess resultsVar
+        if length updatedResults == length nodeList
+          then do
+            case HM.lookup (last nodeList) updatedResults of
+              Nothing -> do
+                say "Error: final result not found"
+                return ()
+              Just finalValue -> do
+                say $ "Final result: " ++ finalValue
+                say "Returning from process"
+                return ()
+          else process
+  process
   end <- liftIO getCurrentTime
   say $ "Total time: " ++ show (diffUTCTime end start)
   terminateAllSlaves backend

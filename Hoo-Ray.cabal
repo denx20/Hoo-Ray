@@ -4,14 +4,14 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           HooRay
+name:           Hoo-Ray
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/HooRay#readme>
-homepage:       https://github.com/githubuser/HooRay#readme
-bug-reports:    https://github.com/githubuser/HooRay/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2023 Author name here
+description:    Please see the README on GitHub at <https://github.com/denx20/Hoo-Ray/blob/main/README.md>
+homepage:       https://github.com/denx20/Hoo-Ray#readme
+bug-reports:    https://github.com/denx20/Hoo-Ray/issues
+author:         Jaden Long, Tony Wu, Dennis Xu
+maintainer:     yuxi.long@duke.edu, shiyou.wu@duke.edu, yingjie.xu@duke.edu
+copyright:      2023 Jaden Long, Tony Wu, and Dennis Xu
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/HooRay
+  location: https://github.com/denx20/Hoo-Ray
 
 library
   exposed-modules:
@@ -29,7 +29,7 @@ library
       Graph
       MatMul
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -45,7 +45,6 @@ library
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers
@@ -54,12 +53,12 @@ library
 executable build_graph
   main-is: build_graph.hs
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HooRay
+      Hoo-Ray
     , base
     , binary
     , distributed-process
@@ -71,7 +70,6 @@ executable build_graph
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers
@@ -80,12 +78,12 @@ executable build_graph
 executable matmul_coarse_test
   main-is: matmul_coarse_test.hs
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HooRay
+      Hoo-Ray
     , base
     , binary
     , distributed-process
@@ -97,7 +95,6 @@ executable matmul_coarse_test
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers
@@ -106,12 +103,12 @@ executable matmul_coarse_test
 executable matmul_ms_test
   main-is: matmul_ms_test.hs
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HooRay
+      Hoo-Ray
     , base
     , binary
     , distributed-process
@@ -123,7 +120,6 @@ executable matmul_ms_test
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers
@@ -132,12 +128,12 @@ executable matmul_ms_test
 executable matmul_ss_test
   main-is: matmul_ss_test.hs
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      HooRay
+      Hoo-Ray
     , base
     , binary
     , distributed-process
@@ -149,7 +145,6 @@ executable matmul_ss_test
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers
@@ -158,7 +153,7 @@ executable matmul_ss_test
 executable matmul_test_gen
   main-is: MatMulTestGen.hs
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       test-gen
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -174,7 +169,6 @@ executable matmul_test_gen
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers
@@ -183,12 +177,12 @@ executable matmul_test_gen
 executable mlp_example
   main-is: mlp_example.hs
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      HooRay
+      Hoo-Ray
     , base
     , binary
     , distributed-process
@@ -200,7 +194,6 @@ executable mlp_example
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers
@@ -209,12 +202,12 @@ executable mlp_example
 executable queue
   main-is: Queue.hs
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HooRay
+      Hoo-Ray
     , base
     , binary
     , distributed-process
@@ -226,7 +219,6 @@ executable queue
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers
@@ -235,12 +227,12 @@ executable queue
 executable transformer_example
   main-is: transformer_example.hs
   other-modules:
-      Paths_HooRay
+      Paths_Hoo_Ray
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      HooRay
+      Hoo-Ray
     , base
     , binary
     , distributed-process
@@ -252,7 +244,6 @@ executable transformer_example
     , optparse-applicative
     , parallel
     , random
-    , stm
     , text
     , time
     , unordered-containers

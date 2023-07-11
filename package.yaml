@@ -1,10 +1,10 @@
-name: HooRay
+name: Hoo-Ray
 version: 0.1.0.0
-github: "githubuser/HooRay"
+github: "denx20/Hoo-Ray"
 license: BSD3
-author: "Author name here"
-maintainer: "example@example.com"
-copyright: "2023 Author name here"
+author: "Jaden Long, Tony Wu, Dennis Xu"
+maintainer: "yuxi.long@duke.edu, shiyou.wu@duke.edu, yingjie.xu@duke.edu"
+copyright: "2023 Jaden Long, Tony Wu, and Dennis Xu"
 
 extra-source-files:
   - README.md
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description: Please see the README on GitHub at <https://github.com/githubuser/HooRay#readme>
+description: Please see the README on GitHub at <https://github.com/denx20/Hoo-Ray/blob/main/README.md>
 
 dependencies:
   - base
@@ -34,7 +34,6 @@ dependencies:
   - unordered-containers
   - hashable
   - time
-  - stm
 
 ghc-options:
   - -Wall
@@ -59,7 +58,7 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - HooRay
+      - Hoo-Ray
   matmul_test_gen:
     main: MatMulTestGen.hs
     source-dirs: test-gen
@@ -71,7 +70,7 @@ executables:
     main: matmul_ss_test.hs
     source-dirs: test
     dependencies:
-      - HooRay
+      - Hoo-Ray
   matmul_ms_test:
     main: matmul_ms_test.hs
     source-dirs: test
@@ -80,7 +79,7 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - HooRay
+      - Hoo-Ray
   matmul_coarse_test:
     main: matmul_coarse_test.hs
     source-dirs: test
@@ -89,17 +88,17 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - HooRay
+      - Hoo-Ray
   mlp_example:
     main: mlp_example.hs
     source-dirs: test
     dependencies:
-      - HooRay
+      - Hoo-Ray
   transformer_example:
     main: transformer_example.hs
     source-dirs: test
     dependencies:
-      - HooRay
+      - Hoo-Ray
   build_graph:
     main: build_graph.hs
     source-dirs: test
@@ -108,4 +107,4 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - HooRay
+      - Hoo-Ray
