@@ -23,6 +23,7 @@ module MatMul
     deserializeDouble,
     serializeDoubleList,
     deserializeDoubleList,
+    dequeue,
   )
 where
 
@@ -144,3 +145,6 @@ deserializeDoubleList s = map (map read . splitOn ',') $ lines s
 
 splitOn :: Char -> String -> [String]
 splitOn delimiter = foldr (\c acc -> if c == delimiter then "" : acc else (c : head acc) : tail acc) [""]
+
+dequeue :: [a] -> (a, [a])
+dequeue xs = (head xs, tail xs)

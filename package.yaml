@@ -34,6 +34,7 @@ dependencies:
   - unordered-containers
   - hashable
   - time
+  - stm
 
 ghc-options:
   - -Wall
@@ -73,6 +74,15 @@ executables:
       - HooRay
   matmul_ms_test:
     main: matmul_ms_test.hs
+    source-dirs: test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - HooRay
+  matmul_coarse_test:
+    main: matmul_coarse_test.hs
     source-dirs: test
     ghc-options:
       - -threaded
