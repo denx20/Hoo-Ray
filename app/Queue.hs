@@ -192,17 +192,6 @@ dispatchJob masterId nodeId node resultMap depGraph = do
 allNodes :: HM.HashMap String [String] -> [String]
 allNodes graph = HS.toList . HS.fromList $ HM.keys graph ++ concat (HM.elems graph)
 
-sumVtmpValues :: HM.HashMap String String -> Double
-sumVtmpValues = HM.foldrWithKey accumulateVtmpValues 0
-  where
-    accumulateVtmpValues key value acc =
-      if "v_tmp" `isPrefixOf` key
-        then acc + deserializeDouble value
-        else acc
-
-    isPrefixOf :: String -> String -> Bool
-    isPrefixOf prefix str = take (length prefix) str == prefix
-
 reverseDependencyGraph :: DependencyGraph -> HM.HashMap String [String]
 reverseDependencyGraph = foldr reverseEdges HM.empty
   where
@@ -238,32 +227,24 @@ assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar n
   queue <- readTVarProcess queueVar
   results <- readTVarProcess resultsVar
   idleWorkers <- readTVarProcess idleWorkersVar
-  if null queue && length results == length nodeList
+  if not (null idleWorkers) && not (null queue)
     then do
-      say $ "Final result: " ++ show (sumVtmpValues results)
-      say "Returning from assignJobs"
-      return ()
-    else
-      if not (null idleWorkers) && not (null queue)
-        then do
-          let worker = head idleWorkers
-          let job = head queue
-          modifyTVarProcess idleWorkersVar tail
-          modifyTVarProcess queueVar tail
-          modifyTVarProcess pendingNodesVar (HS.delete job)
-          dispatchJob master worker job results depGraph
-          -- liftIO $ threadDelay 1000
-          processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
-        else do
-          -- liftIO $ threadDelay 1000
-          processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
+      let worker = head idleWorkers
+      let job = head queue
+      modifyTVarProcess idleWorkersVar tail
+      modifyTVarProcess queueVar tail
+      modifyTVarProcess pendingNodesVar (HS.delete job)
+      dispatchJob master worker job results depGraph
+      processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
+    else do
+      processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
 
 processReplies :: TVar [String] -> TVar (HM.HashMap String String) -> TVar [NodeId] -> TVar (HM.HashMap String Int) -> TVar (HS.HashSet String) -> [String] -> HM.HashMap String [String] -> HM.HashMap String [String] -> ProcessId -> Process ()
 processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master = do
   maybeResult <- expectTimeout 0
   case maybeResult of
     Nothing -> do
-      return ()
+      assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
     Just (Result worker node result) -> do
       modifyTVarProcess idleWorkersVar (++ [worker])
       modifyTVarProcess resultsVar (HM.insert node result)
@@ -271,9 +252,20 @@ processReplies queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesV
       updatedIndegrees <- readTVarProcess indegreeCountVar
       queue <- readTVarProcess queueVar
       pendingNodes <- readTVarProcess pendingNodesVar
-      -- say $ "RESULTS" ++ show updatedResults ++ " " ++ show nodeList
       modifyTVarProcess queueVar (++ getIndegreeZeroNodes updatedIndegrees pendingNodes queue)
-  assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
+      updatedResults <- readTVarProcess resultsVar
+      if length updatedResults == length nodeList
+        then do
+          case HM.lookup node updatedResults of
+            Nothing -> do
+              say "Error: final result not found"
+              return ()
+            Just finalValue -> do
+              say $ "Final result: " ++ finalValue
+              say "Returning from processReplies"
+              return ()
+        else do
+          assignJobs queueVar resultsVar idleWorkersVar indegreeCountVar pendingNodesVar nodeList reversedDepGraph depGraph master
 
 {-
 Code for master. Master performs the following steps:
