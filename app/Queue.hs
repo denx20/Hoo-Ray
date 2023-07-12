@@ -1,8 +1,11 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 import Control.Concurrent.MVar
   ( MVar,
@@ -82,7 +85,7 @@ class Serializable a where
 
 instance Serializable Int where
   serialize = show
-  deserialize = round . read
+  deserialize s = round (read s :: Double)
 
 instance Serializable Double where
   serialize = show
@@ -96,93 +99,107 @@ class ProcessStep a where
   action :: a -> [String] -> IO String
 
 data CalculateMatrix = CalculateMatrix
+
 instance ProcessStep CalculateMatrix where
-    action CalculateMatrix args = 
-          let [d1, d2, d3, d4, d5, d6] = map deserialize args :: [Double]
-          in return $ show $ calculateMatrix d1 d2 d3 d4 d5 d6
+  action CalculateMatrix args =
+    let [d1, d2, d3, d4, d5, d6] = map deserialize args :: [Double]
+     in return $ show $ calculateMatrix d1 d2 d3 d4 d5 d6
 
 data GenerateRandomMatrix = GenerateRandomMatrix
+
 instance ProcessStep GenerateRandomMatrix where
-    action GenerateRandomMatrix args = 
-          let [d1, d2, d3, d4] = map deserialize args :: [Int]
-          in return $ serialize $ generateRandomMatrix d1 d2 (fromIntegral d3) d4
+  action GenerateRandomMatrix args =
+    let [d1, d2, d3, d4] = map deserialize args :: [Int]
+     in return $ serialize $ generateRandomMatrix d1 d2 (fromIntegral d3) d4
 
 data Mmult = Mmult
+
 instance ProcessStep Mmult where
-    action Mmult args = 
-          let [d1, d2] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ mmult d1 d2
+  action Mmult args =
+    let [d1, d2] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ mmult d1 d2
 
 data SumMatrix = SumMatrix
+
 instance ProcessStep SumMatrix where
-    action SumMatrix args = 
-          let [d1] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ sumMatrix d1
+  action SumMatrix args =
+    let [d1] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ sumMatrix d1
 
 data Madd = Madd
+
 instance ProcessStep Madd where
-    action Madd args = 
-          let [d1, d2] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ madd d1 d2
+  action Madd args =
+    let [d1, d2] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ madd d1 d2
 
 data ReluMatrix = ReluMatrix
+
 instance ProcessStep ReluMatrix where
-    action ReluMatrix args = 
-          let [d1] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ reluMatrix d1
+  action ReluMatrix args =
+    let [d1] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ reluMatrix d1
 
 data UpperHalf = UpperHalf
+
 instance ProcessStep UpperHalf where
-    action UpperHalf args = 
-          let [d1] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ upperHalf d1
+  action UpperHalf args =
+    let [d1] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ upperHalf d1
 
 data LowerHalf = LowerHalf
+
 instance ProcessStep LowerHalf where
-    action LowerHalf args = 
-          let [d1] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ lowerHalf d1
+  action LowerHalf args =
+    let [d1] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ lowerHalf d1
 
 data LeftHalf = LeftHalf
+
 instance ProcessStep LeftHalf where
-    action LeftHalf args = 
-          let [d1] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ leftHalf d1
+  action LeftHalf args =
+    let [d1] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ leftHalf d1
 
 data RightHalf = RightHalf
+
 instance ProcessStep RightHalf where
-    action RightHalf args = 
-          let [d1] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ rightHalf d1
+  action RightHalf args =
+    let [d1] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ rightHalf d1
 
 data Transpose = Transpose
+
 instance ProcessStep Transpose where
-    action Transpose args = 
-          let [d1] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ transpose d1
+  action Transpose args =
+    let [d1] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ transpose d1
 
 data SoftmaxByRow = SoftmaxByRow
-instance ProcessStep SoftmaxByRow where
-    action SoftmaxByRow args = 
-          let [d1] = map deserialize args :: [[[Double]]]
-          in return $ serialize $ softmaxByRow d1
 
-data SomeProcessStep = forall a. ProcessStep a => SomeProcessStep a
+instance ProcessStep SoftmaxByRow where
+  action SoftmaxByRow args =
+    let [d1] = map deserialize args :: [[[Double]]]
+     in return $ serialize $ softmaxByRow d1
+
+data SomeProcessStep = forall a. (ProcessStep a) => SomeProcessStep a
 
 processSteps :: HM.HashMap String SomeProcessStep
-processSteps = HM.fromList [
-  ("calculateMatrix", SomeProcessStep CalculateMatrix), 
-  ("generateRandomMatrix", SomeProcessStep GenerateRandomMatrix), 
-  ("mmult", SomeProcessStep Mmult), 
-  ("sumMatrix", SomeProcessStep SumMatrix), 
-  ("madd", SomeProcessStep Madd), 
-  ("reluMatrix", SomeProcessStep ReluMatrix), 
-  ("upperHalf", SomeProcessStep UpperHalf), 
-  ("lowerHalf", SomeProcessStep LowerHalf), 
-  ("leftHalf", SomeProcessStep LeftHalf), 
-  ("rightHalf", SomeProcessStep RightHalf), 
-  ("transpose", SomeProcessStep Transpose), 
-  ("softmaxByRow", SomeProcessStep SoftmaxByRow)]
+processSteps =
+  HM.fromList
+    [ ("calculateMatrix", SomeProcessStep CalculateMatrix),
+      ("generateRandomMatrix", SomeProcessStep GenerateRandomMatrix),
+      ("mmult", SomeProcessStep Mmult),
+      ("sumMatrix", SomeProcessStep SumMatrix),
+      ("madd", SomeProcessStep Madd),
+      ("reluMatrix", SomeProcessStep ReluMatrix),
+      ("upperHalf", SomeProcessStep UpperHalf),
+      ("lowerHalf", SomeProcessStep LowerHalf),
+      ("leftHalf", SomeProcessStep LeftHalf),
+      ("rightHalf", SomeProcessStep RightHalf),
+      ("transpose", SomeProcessStep Transpose),
+      ("softmaxByRow", SomeProcessStep SoftmaxByRow)
+    ]
 
 {-
 Define the remote call used by master to send tasks over to remote workers
@@ -213,10 +230,10 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
       -- say $ "HANDLING function node " ++ node
       let deps = fromMaybe [] (HM.lookup node depGraph)
       let vals = map (\x -> fromMaybe "" (HM.lookup x resultMap)) deps
-      case HM.lookup (extractMiddle node) processSteps of 
+      case HM.lookup (extractMiddle node) processSteps of
         Just (SomeProcessStep step) -> do
-            result <- liftIO $ action step vals
-            send masterPid (Result nodeId node result)
+          result <- liftIO $ action step vals
+          send masterPid (Result nodeId node result)
         Nothing -> error "Unknown function name"
 
     handleArgs :: Process ()
@@ -285,11 +302,9 @@ runMaster :: Backend -> String -> [NodeId] -> Process ()
 runMaster backend filepath workers = do
   start <- liftIO getCurrentTime
   say "Master started"
-  if null workers
-    then do
-      say "No workers available, exiting"
-      liftIO $ exitWith (ExitFailure 1)
-    else say $ "Master discovered workers: " ++ show workers
+  when (null workers) $ do
+    say "No workers available, exiting"
+    liftIO $ exitWith (ExitFailure 1)
   dependencyGraph <- liftIO $ buildGraph filepath >>= either (error . show) return
   let depGraph = HM.fromList dependencyGraph :: HM.HashMap String [String]
   let reversedDepGraph = reverseDependencyGraph dependencyGraph :: HM.HashMap String [String]
@@ -319,14 +334,14 @@ runMaster backend filepath workers = do
             updatedIndegrees <- readMVarProcess indegreeCounMVar
             pendingNodes <- readMVarProcess pendingNodesVar
             modifyMVarProcess queueVar (++ getIndegreeZeroNodes updatedIndegrees pendingNodes queue)
-            updatedResults <- readMVarProcess resultsVar  
-            when (length updatedResults == length nodeList) $ do 
+            updatedResults <- readMVarProcess resultsVar
+            when (length updatedResults == length nodeList) $ do
               modifyMVarProcess finalResultVar (const (Just result))
               return ()
           Nothing -> return ()
         when (not (null idleWorkers) && not (null queue)) $ do
           let worker = head idleWorkers
-          let job = head queue  
+          let job = head queue
           modifyMVarProcess idleWorkersVar tail
           modifyMVarProcess queueVar tail
           modifyMVarProcess pendingNodesVar (HS.delete job)

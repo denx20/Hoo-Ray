@@ -1,6 +1,8 @@
 -- generate matmul_ss_test.hs and matmul_ms_test.hs
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
+import Control.Monad (when)
 import Data.Text (Text, intercalate, pack)
 import Data.Text.IO (writeFile)
 import Options.Applicative
@@ -20,7 +22,7 @@ import Options.Applicative
     (<**>),
   )
 import System.Random (mkStdGen, randomRs)
-import Control.Monad (when)
+import Prelude hiding (writeFile)
 
 {-
 Define parameters (l, m, n, p, r) that determine the size of evaluation workload.
@@ -97,35 +99,33 @@ generateCalculateMatrixFunctionCall m n p seedA seedB range = pack ("calculateMa
 getRandomSeeds :: Int -> Int -> Int -> [Int]
 getRandomSeeds n range seed = take n (randomRs (1, range) (mkStdGen seed))
 
+writeProgram :: String -> Text -> IO ()
+writeProgram fileName programText = do
+  writeFile ("test/" ++ fileName) programText
+  putStrLn (fileName ++ " has been generated.")
+
 main :: IO ()
 main = do
   options <- execParser opts
   let test = testInput options
   when test $ putStrLn "Generating matmul_test.hs compatible with queue.hs"
-  let nlines = nlinesInput options
-  let m = mInput options
-  let n = nInput options
-  let p = pInput options
-  let range = rangeInput options
+  let [nlines, m, n, p, range] = map (\f -> f options) [nlinesInput, mInput, nInput, pInput, rangeInput]
   let seeds = getRandomSeeds (2 * nlines) 1000000 512
-  let as = getNVarNames nlines "a"
-  let bs = getNVarNames nlines "b"
-  let cs = getNVarNames nlines "c"
-  let tmps = getNVarNames nlines "tmp"
+  let [as, bs, cs, tmps] = map (getNVarNames nlines) ["a", "b", "c", "tmp"]
 
   -- Create single thread evaluation program and save to test/matmul_ss_test.hs
   let programText = "import MatMul\nimport Prelude\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> as !! i <> " = " <> generateMatrixFunctionCall m n range (seeds !! (2 * i)) <> "\n  let " <> bs !! i <> " = " <> generateMatrixFunctionCall n p range (seeds !! (2 * i + 1)) <> "\n  let " <> cs !! i <> " = mmult " <> as !! i <> " " <> bs !! i <> "\n  let " <> tmps !! i <> " = sumMatrix " <> cs !! i <> "\n") [0 .. nlines - 1]) <> "  let result_list = [" <> intercalate ", " tmps <> "]\n  let result = sum result_list\n  print result\n"
-  Data.Text.IO.writeFile "test/matmul_ss_test.hs" programText
-  putStrLn "matmul_ss_test.hs has been generated."
+  writeProgram "matmul_ss_test.hs" programText
 
   -- Create SMP evaluation program and save to test/matmul_ms_test.hs
-  let concurrentProgramText = "import MatMul\nimport Control.Parallel (par, pseq)\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2 * i)) (seeds !! (2 * i + 1)) range <> "\n") [0 .. nlines - 1]) <> "  let result_list = [" <> intercalate ", " tmps <> "]\n  let result = foldr1 (\\acc x -> x `par` (acc + x)) result_list\n  print result\n"
-  Data.Text.IO.writeFile "test/matmul_ms_test.hs" concurrentProgramText
-  putStrLn "matmul_ms_test.hs has been generated."
+  let concurrentProgramText = "import MatMul\nimport Control.Parallel\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2 * i)) (seeds !! (2 * i + 1)) range <> "\n") [0 .. nlines - 1]) <> "  let result_list = [" <> intercalate ", " tmps <> "]\n  let result = foldr1 (\\acc x -> x `par` (acc + x)) result_list\n  print result\n"
+  writeProgram "matmul_ms_test.hs" concurrentProgramText
+
+  -- Create coarse and fine grained evaluation program compatible with Queue.hs and save to test/matmul_coarse_test.hs and test/matmul_fine_test.hs
   when test $ do
-      let queueProgramText = "import MatMul\nimport Control.Parallel (par, pseq)\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2 * i)) (seeds !! (2 * i + 1)) range <> "\n") [0 .. nlines - 1]) <> "  print \"Done\"\n"
-      Data.Text.IO.writeFile "test/matmul_coarse_test.hs" queueProgramText >> putStrLn "matmul_coarse_test.hs has been generated."
-      let queueProgramText2 = "import MatMul\nimport Prelude\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> as !! i <> " = " <> generateMatrixFunctionCall m n range (seeds !! (2 * i)) <> "\n  let " <> bs !! i <> " = " <> generateMatrixFunctionCall n p range (seeds !! (2 * i + 1)) <> "\n  let " <> cs !! i <> " = mmult " <> as !! i <> " " <> bs !! i <> "\n  let " <> tmps !! i <> " = sumMatrix " <> cs !! i <> "\n") [0 .. nlines - 1]) <> "  print \"Done\"\n"
-      Data.Text.IO.writeFile "test/matmul_fine_test.hs" queueProgramText2 >> putStrLn "matmul_fine_test.hs has been generated."
+    let queueProgramText = "import MatMul\nimport Control.Parallel\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2 * i)) (seeds !! (2 * i + 1)) range <> "\n") [0 .. nlines - 1]) <> "  print \"Done\"\n"
+    writeProgram "matmul_coarse_test.hs" queueProgramText
+    let queueProgramText2 = "import MatMul\nimport Prelude\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> as !! i <> " = " <> generateMatrixFunctionCall m n range (seeds !! (2 * i)) <> "\n  let " <> bs !! i <> " = " <> generateMatrixFunctionCall n p range (seeds !! (2 * i + 1)) <> "\n  let " <> cs !! i <> " = mmult " <> as !! i <> " " <> bs !! i <> "\n  let " <> tmps !! i <> " = sumMatrix " <> cs !! i <> "\n") [0 .. nlines - 1]) <> "  print \"Done\"\n"
+    writeProgram "matmul_fine_test.hs" queueProgramText2
   where
-    opts = info (optionsParser <**> helper) (fullDesc <> progDesc "Generate single-threaded, multi-threaded, and queue.hs versions of matmul benchmark.")
+    opts = info (optionsParser <**> helper) (fullDesc <> progDesc "Generate single-threaded, multi-threaded, and Queue.hs versions of matmul benchmark.")

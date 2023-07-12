@@ -18,11 +18,11 @@ def run(num_slaves, filename):
     slave_command = lambda port: f"stack exec queue slave 127.0.0.1 {port}"
     for i in range(num_slaves):
         slave = subprocess.Popen(
-            (slave_command(i + 8085)).split(" "), stdout=subprocess.DEVNULL
+            (slave_command(i + 8081)).split(" "), stdout=subprocess.DEVNULL
         )
         process_pids.append(slave.pid)
 
-    master_command = "stack exec queue master 127.0.0.1 8084 " + filename
+    master_command = "stack exec queue master 127.0.0.1 8080 " + filename
     print(master_command)
     master_command = subprocess.Popen(master_command.split(" "), stdout=subprocess.PIPE)
 
@@ -37,10 +37,8 @@ def run(num_slaves, filename):
 
 
 def cleanup(pids):
-    print(f"killing processes: {pids}")
     for pid in pids:
         os.kill(pid, signal.SIGINT)
-    # time.sleep(1)
 
 
 @app.command("run", help="The main function")
@@ -51,7 +49,6 @@ def main(
     try:
         run(num_slaves, filename)
     except KeyboardInterrupt:
-        print("???")
         cleanup(process_pids)
 
 
