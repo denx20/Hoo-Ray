@@ -26,3 +26,5 @@ cabal.project.local~
 .DS_Store
 .vscode/
 ```
+
+**/slurm-outs

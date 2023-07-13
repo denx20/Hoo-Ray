@@ -305,6 +305,17 @@ runMaster backend filepath workers = do
   when (null workers) $ do
     say "No workers available, exiting"
     liftIO $ exitWith (ExitFailure 1)
+  say $ "Number of discovered workers: " ++ show (length workers)
+  let num_workers_to_use = 40
+  when ((length workers) < num_workers_to_use) $ do
+    say "Not enough workers, exiting"
+    say $ "Workers: " ++ show workers
+    liftIO $ exitWith (ExitFailure 1)
+
+  let running_workers = take num_workers_to_use workers
+
+  say $ "Number of running_workers used: " ++ show (length running_workers)
+
   dependencyGraph <- liftIO $ buildGraph filepath >>= either (error . show) return
   let depGraph = HM.fromList dependencyGraph :: HM.HashMap String [String]
   let reversedDepGraph = reverseDependencyGraph dependencyGraph :: HM.HashMap String [String]
@@ -315,7 +326,7 @@ runMaster backend filepath workers = do
   queueVar <- newMVarProcess indegreeZeroNodes
   indegreeCounMVar <- newMVarProcess indegreeCount
   resultsVar <- newMVarProcess HM.empty
-  idleWorkersVar <- newMVarProcess workers
+  idleWorkersVar <- newMVarProcess running_workers
   pendingNodesVar <- newMVarProcess $ HS.fromList nodeList
   finalResultVar <- newMVarProcess Nothing
 
