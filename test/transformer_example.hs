@@ -10,16 +10,16 @@ main :: IO ()
 main = do
   {- simulate a transformer layer with input embedding size 256 -}
   {- data -}
-  let x = generateRandomMatrix 20 256 1.0 123456
+  let x = generateRandomMatrix 100 500 1.0 123456
   -- let mask = generateRandomMatrix 20 20 1.0 501601
 
   {- model weights -}
   -- let dk = 64
   -- let dv = 512
 
-  let wq = generateRandomMatrix 256 64 0.1 654321
-  let wk = generateRandomMatrix 256 64 0.1 132456
-  let wv = generateRandomMatrix 256 256 0.1 612453
+  let wq = generateRandomMatrix 500 256 0.1 654321
+  let wk = generateRandomMatrix 500 256 0.1 132456
+  let wv = generateRandomMatrix 500 500 0.1 612453
 
   -- let w1 = generateRandomMatrix 256 100 1.0 230340
   -- let b1 = generateRandomMatrix 20 100 1.0 671675

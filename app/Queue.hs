@@ -109,8 +109,8 @@ data GenerateRandomMatrix = GenerateRandomMatrix
 
 instance ProcessStep GenerateRandomMatrix where
   action GenerateRandomMatrix args =
-    let [d1, d2, d3, d4] = map deserialize args :: [Int]
-     in return $ serialize $ generateRandomMatrix d1 d2 (fromIntegral d3) d4
+    let [d1, d2, d3, d4] = map deserialize args :: [Double]
+     in return $ serialize $ generateRandomMatrix (round d1) (round d2) d3 (round d4)
 
 data Mmult = Mmult
 
@@ -216,7 +216,7 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
 
     handleV :: Process ()
     handleV = do
-      -- say $ "HANDLING node " ++ node
+      say $ "HANDLING node " ++ node
       let fname = head (fromMaybe [] $ HM.lookup node depGraph)
       let result = fromMaybe "" (HM.lookup fname resultMap) :: String
       send masterPid (Result nodeId node result)
@@ -227,7 +227,7 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
     -}
     handleF :: Process ()
     handleF = do
-      -- say $ "HANDLING function node " ++ node
+      say $ "HANDLING function node " ++ node
       let deps = fromMaybe [] (HM.lookup node depGraph)
       let vals = map (\x -> fromMaybe "" (HM.lookup x resultMap)) deps
       case HM.lookup (extractMiddle node) processSteps of
