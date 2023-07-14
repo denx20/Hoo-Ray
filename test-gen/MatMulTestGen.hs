@@ -123,9 +123,9 @@ main = do
 
   -- Create coarse and fine grained evaluation program compatible with Queue.hs and save to test/matmul_coarse_test.hs and test/matmul_fine_test.hs
   when test $ do
-    let queueProgramText = "import MatMul\nimport Control.Parallel\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2 * i)) (seeds !! (2 * i + 1)) range <> "\n") [0 .. nlines - 1]) <> "  print \"Done\"\n"
+    let queueProgramText = "import MatMul\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> tmps !! i <> " = " <> generateCalculateMatrixFunctionCall m n p (seeds !! (2 * i)) (seeds !! (2 * i + 1)) range <> "\n") [0 .. nlines - 1]) <> "  print \"Done\"\n"
     writeProgram "matmul_coarse_test.hs" queueProgramText
-    let queueProgramText2 = "import MatMul\nimport Prelude\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> as !! i <> " = " <> generateMatrixFunctionCall m n range (seeds !! (2 * i)) <> "\n  let " <> bs !! i <> " = " <> generateMatrixFunctionCall n p range (seeds !! (2 * i + 1)) <> "\n  let " <> cs !! i <> " = mmult " <> as !! i <> " " <> bs !! i <> "\n  let " <> tmps !! i <> " = sumMatrix " <> cs !! i <> "\n") [0 .. nlines - 1]) <> "  print \"Done\"\n"
+    let queueProgramText2 = "import MatMul\n\nmain :: IO ()\nmain = do\n" <> mconcat (map (\i -> "  let " <> as !! i <> " = " <> generateMatrixFunctionCall m n range (seeds !! (2 * i)) <> "\n  let " <> bs !! i <> " = " <> generateMatrixFunctionCall n p range (seeds !! (2 * i + 1)) <> "\n  let " <> cs !! i <> " = mmult " <> as !! i <> " " <> bs !! i <> "\n  let " <> tmps !! i <> " = sumMatrix " <> cs !! i <> "\n") [0 .. nlines - 1]) <> "  print \"Done\"\n"
     writeProgram "matmul_fine_test.hs" queueProgramText2
   where
     opts = info (optionsParser <**> helper) (fullDesc <> progDesc "Generate single-threaded, multi-threaded, and Queue.hs versions of matmul benchmark.")

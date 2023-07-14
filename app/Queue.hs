@@ -216,7 +216,7 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
 
     handleV :: Process ()
     handleV = do
-      say $ "HANDLING node " ++ node
+      say $ "HANDLING VARIABLE " ++ node
       let fname = head (fromMaybe [] $ HM.lookup node depGraph)
       let result = fromMaybe "" (HM.lookup fname resultMap) :: String
       send masterPid (Result nodeId node result)
@@ -227,7 +227,7 @@ remoteCall (RemoteCall nodeId node masterPid resultMap depGraph) = do
     -}
     handleF :: Process ()
     handleF = do
-      say $ "HANDLING function node " ++ node
+      say $ "HANDLING FUNCTION " ++ node
       let deps = fromMaybe [] (HM.lookup node depGraph)
       let vals = map (\x -> fromMaybe "" (HM.lookup x resultMap)) deps
       case HM.lookup (extractMiddle node) processSteps of
