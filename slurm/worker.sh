@@ -25,6 +25,8 @@ interface=$(ifconfig | awk '/MULTICAST/ {print $1}' | sed 's/:$//')
 # Credit: https://serverfault.com/a/911621
 ip_addr=$(ip -f inet addr show $interface | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
 
+ifconfig
+
 echo "Starting worker on $ip_addr:$port"
 stack exec queue slave $ip_addr $port > /dev/null
 
