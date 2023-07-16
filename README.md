@@ -81,7 +81,7 @@ stack exec queue master 127.0.0.1 8000 {path/to/file/to/parallize.hs}
 
 # Benchmarking
 
-The tests are run via one of (the )
+The tests are run via one of
 
 ```
 # Single thread
@@ -97,6 +97,8 @@ python benchmark_servers.py {num_workers}
 # Shared memory parallel (we only wrote SMP for matmul_test)
 time stack exec -- matmul_ms_test +RTS -N
 ```
+
+To kill all the workers, rather than having to finding each process via a process manager, you can use the handy script `./kill_all_workers.sh`.
 
 # Troubleshooting
 
@@ -118,6 +120,3 @@ cd udp-test
 If UDP multicast is configured properly[^udp], you should see *Hello, World!* printed on the terminal with `listener` running.
 
 [^udp]: In the particular case of misconfiguration that happened to me while running a Linux machine on Duke's network, I had to execute `sudo vim /etc/resolv.conf` and change the nameserver line to `nameserver 152.3.72.100`. Might not apply to you, but could be of interest to consult.
-[^deps]: If you get an error about Cabal cannot resolve dependencies while installing with `-f distributed`, downgrade your GHC to 8.4.4 with `ghcup tui` and try again. It seems that the distributed-process package has a dependency issue and can only work with GHC 8.x.x. Furthermore, we have tried using `stack` as our resolver, but it keeps falling back to stack with GHC 8.x.x even though the [distributed-process package](https://github.com/haskell-distributed/distributed-process) has some yaml files for GHC 9.x.x with stack. I am unsure why.
-[^localhost_problem]: For some reason, using `localhost` here only occasionally works, but using `127.0.0.1` always works. Any networks person to explain why?
-
