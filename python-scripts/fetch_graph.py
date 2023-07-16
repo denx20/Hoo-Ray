@@ -1,16 +1,16 @@
-# Fetches a graph from the output of `run-graph.hs`
 import networkx as nx
 import matplotlib.pyplot as plt
 from pathlib import Path
 from ast import literal_eval
 from networkx.drawing.nx_agraph import graphviz_layout
 
-plt.rcParams["figure.figsize"] = (50, 50)
-
-## Modify these variables
-GRAPH_FILE = Path(__file__).parent / '..' / 'graph.out'
+########################### Modify these variables ###############################
+GRAPH_FILE = Path(__file__).parent / '..' / 'graph.out'  # Defaults to graph.out in the directory above
 GRAPH_FILE.resolve()
 OUTPUT_FILE = 'graph.png'
+###################################################################################
+
+plt.rcParams["figure.figsize"] = (50, 50)
 
 BEGINNING_STRING = '<-- Starting Dependency Graph Generation -->'
 ENDING_STRING = '<-- End of Dependency Graph Generation -->'
@@ -33,7 +33,7 @@ with open(GRAPH_FILE) as f:
     lines = f.readlines()
     lines = [l.strip() for l in lines]
 
-    graph_lines = lines[lines.index(BEGINNING_STRING) + 1: lines.index(ENDING_STRING)]
+    graph_lines = lines[:lines.index('')]
     parsed_objects = list(map(literal_eval, graph_lines))
 
     for parent, children in parsed_objects:
