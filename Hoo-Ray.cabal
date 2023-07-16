@@ -9,9 +9,9 @@ version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/denx20/Hoo-Ray/blob/main/README.md>
 homepage:       https://github.com/denx20/Hoo-Ray#readme
 bug-reports:    https://github.com/denx20/Hoo-Ray/issues
-author:         Jaden Long, Tony Wu, Dennis Xu
+author:         Yuxi Long, Shiyou Wu, Yingjie Xu
 maintainer:     yuxi.long@duke.edu, shiyou.wu@duke.edu, yingjie.xu@duke.edu
-copyright:      2023 Jaden Long, Tony Wu, and Dennis Xu
+copyright:      2023 Yuxi Long, Shiyou Wu, and Yingjie Xu
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
