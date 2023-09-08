@@ -2,13 +2,12 @@ name: Hoo-Ray
 version: 0.1.0.0
 github: "denx20/Hoo-Ray"
 license: BSD3
-author: "Jaden Long, Tony Wu, Dennis Xu"
+author: "Yuxi Long, Shiyou Wu, Yingjie Xu"
 maintainer: "yuxi.long@duke.edu, shiyou.wu@duke.edu, yingjie.xu@duke.edu"
-copyright: "2023 Jaden Long, Tony Wu, and Dennis Xu"
+copyright: "2023 Yuxi Long, Shiyou Wu, and Yingjie Xu"
 
 extra-source-files:
   - README.md
-  - CHANGELOG.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -50,6 +49,7 @@ library:
   source-dirs: src
 
 executables:
+  # Core of this package
   queue:
     main: Queue.hs
     source-dirs: app
@@ -61,13 +61,15 @@ executables:
       - Hoo-Ray
   build_graph:
     main: build_graph.hs
-    source-dirs: test
+    source-dirs: src
     ghc-options:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
       - Hoo-Ray
+
+  # Test generator
   matmul_test_gen:
     main: MatMulTestGen.hs
     source-dirs: test-gen
@@ -75,6 +77,8 @@ executables:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
+
+  # Testing tasks single-threaded
   matmul_ss_test:
     main: matmul_ss_test.hs
     source-dirs: test

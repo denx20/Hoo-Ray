@@ -1,4 +1,5 @@
 #!/bin/bash
+# Starting a number of servers
 
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <number_of_servers>"

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -9,15 +9,14 @@ version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/denx20/Hoo-Ray/blob/main/README.md>
 homepage:       https://github.com/denx20/Hoo-Ray#readme
 bug-reports:    https://github.com/denx20/Hoo-Ray/issues
-author:         Jaden Long, Tony Wu, Dennis Xu
+author:         Yuxi Long, Shiyou Wu, Yingjie Xu
 maintainer:     yuxi.long@duke.edu, shiyou.wu@duke.edu, yingjie.xu@duke.edu
-copyright:      2023 Jaden Long, Tony Wu, and Dennis Xu
+copyright:      2023 Yuxi Long, Shiyou Wu, and Yingjie Xu
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    CHANGELOG.md
 
 source-repository head
   type: git
@@ -53,9 +52,12 @@ library
 executable build_graph
   main-is: build_graph.hs
   other-modules:
+      ExtractParensExpr
+      Graph
+      MatMul
       Paths_Hoo_Ray
   hs-source-dirs:
-      test
+      src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Hoo-Ray

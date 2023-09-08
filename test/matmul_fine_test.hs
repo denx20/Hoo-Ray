@@ -1,5 +1,4 @@
 import MatMul
-import Prelude
 
 main :: IO ()
 main = do
